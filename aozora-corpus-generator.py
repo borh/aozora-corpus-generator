@@ -107,14 +107,14 @@ def read_aozora_bunko_list(path):
                     id = match.group(1)
                     file_path = match.group(2)
                 except AttributeError:
-                    print('No XML, ignoring {}, {}'.format(author, title))
+                    pass
 
                 d[author][title] = {
                     'file_path': 'aozorabunko/cards/{}/{}'.format(id, file_path),
                     'file_name': '{}_{}_{}'.format(  # TODO Do we need to shorthen these?
                         row['姓ローマ字'],
                         row['名ローマ字'][0:1],
-                        jaconv.kana2alphabet(jaconv.kata2hira(row['作品名読み'][0:5].replace('・', '_')))
+                        jaconv.kana2alphabet(jaconv.kata2hira(row['作品名読み'][0:5].replace('・', '_'))).title()
                     )
                 }
     return d

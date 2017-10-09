@@ -9,7 +9,7 @@ import jaconv
 import csv
 from collections import defaultdict
 from zipfile import ZipFile
-from io import TextIOWrapper, StringIO
+from io import TextIOWrapper
 from lxml import html
 from natto import MeCab
 

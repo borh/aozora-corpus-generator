@@ -123,15 +123,17 @@ def read_aozora_bunko_list(path):
 def read_author_title_list(aozora_db, path):
     ''''''
     corpus_files = []
+    db = []
     with open(path, newline='') as f:
         r = csv.DictReader(f)
         for row in r:
             try:
                 match = aozora_db[row['author'].replace(' ', '')][row['title']]
                 corpus_files.append((match['file_name'], match['file_path']))
+                db.append(row)
             except KeyError:
-                print('{} not in Aozora Bunko DB'.format(row))
-    return corpus_files
+                print('{} not in Aozora Bunko DB. Skipping...'.format(row))
+    return corpus_files, db
 
 
 def read_aozora_bunko_xml(path):
@@ -199,15 +201,18 @@ $ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author
 if __name__ == '__main__':
     args = parse_args()
 
-    pprint(args)
-
-    pathlib.Path(args['out']).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(args['out'] + '/Tokenized').mkdir(parents=True, exist_ok=True)
+    pathlib.Path(args['out'] + '/Plain').mkdir(parents=True, exist_ok=True)
 
     aozora_db = read_aozora_bunko_list(args['aozora_bunko_repository'])
-    files = [f for csv_path in args['author_title_csv']
-             for f in read_author_title_list(aozora_db, csv_path)]
 
-    print(files)
+    files, metadata = [], []
+    for csv_path in args['author_title_csv']:
+        fs, db = read_author_title_list(aozora_db, csv_path)
+        files.extend(fs)
+        metadata.extend(db)
+
+    write_metadata_file(files, metadata, args['out'])
 
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:

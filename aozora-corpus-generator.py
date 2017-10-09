@@ -143,6 +143,7 @@ def read_aozora_bunko_xml(path):
     if len(body) == 0:
         print('WARN: look into this file')
         body = doc.xpath(".//div")[0]
+
     # Remove ruby and notes:
     for e in body.xpath(".//span[@class='notes'] | .//rp | .//rt"):
         e.drop_tree()
@@ -152,15 +153,28 @@ def read_aozora_bunko_xml(path):
     return [list(wakati(paragraph)) for paragraph in text.splitlines()]
 
 
-def write_corpus_file(sentences, file_name, prefix):
+def write_corpus_file(paragraphs, file_name, prefix):
     ''''''
-    with open('{}/{}.txt'.format(prefix, file_name), 'w') as f:
-        for sentence in sentences:
-            f.write(sentence + '\n')
+    with open('{}/Tokenized/{}.txt'.format(prefix, file_name), 'w') as f_tokenized:
+        with open('{}/Plain/{}.txt'.format(prefix, file_name), 'w') as f_plain:
+            for paragraph in paragraphs:
+                f_tokenized.write('<PGB>\n'.join(re.sub(r'\s+', '\n', sentence) + '\n<EOS>\n' for sentence in paragraph))
+                f_plain.write('\n'.join(paragraph) + '\n\n')
 
 
 def convert_corpus_file(file_name, file_path, prefix):
     write_corpus_file(read_aozora_bunko_xml(file_path), file_name, prefix)
+    return file_name, file_path, prefix
+
+
+def write_metadata_file(files, metadata, prefix):
+    metadata_fn = '{}/groups.csv'.format(prefix)
+    with open(metadata_fn, 'w', newline='') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(['textid', 'language', 'corpus', 'brow'])
+        for (file_name, _), d in zip(files, metadata):
+            writer.writerow([file_name + '.txt', 'ja', 'Aozora Bunko', d['brow']])
+        print('Wrote metadata to {}'.format(metadata_fn))
 
 
 def parse_args():
@@ -216,7 +230,14 @@ if __name__ == '__main__':
 
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [executor.submit(convert_corpus_file, file_name, file_path, args['out']) for (file_name, file_path) in files]
+            futures = [executor.submit(convert_corpus_file, file_name, file_path, args['out'])
+                       for (file_name, file_path) in files]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    file_name, file_path, prefix = future.result()
+                    print('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, prefix, file_name))
+                except Exception:
+                    print('Process {} failed: {}'.format(future, future.result()))
     else:
         for file_name, file_path in files:
             convert_corpus_file(file_name, file_path, args['out'])

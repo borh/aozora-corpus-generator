@@ -33,7 +33,7 @@ def split_sentence_ja(s):
     (non-regex) logic would be required to implement a more robust
     solution.
     '''
-    delimiters = r'[!\?。．！？]'
+    delimiters = r'[!\?。．！？…]'
     closing_quotations = r'[\)）」』】］〕〉》\]]'
     return [s.strip() for s in re.sub(r'({}+)(?!{})'.format(delimiters, closing_quotations),
                                       r'\1\n',

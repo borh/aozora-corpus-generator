@@ -33,7 +33,7 @@ brew install mecab mecab-unidic
 
 ## Python
 
-Python 3 is required. All testing is done on the latest stable version (currently 3.6.2), but slightly older version should also work.
+Python 3 is required. All testing is done on the latest stable version (currently 3.6.2), but a slightly older version should also work.
 Native dependencies must be installed before installing the Python dependencies (natto-py needs MeCab).
 
 This project uses [pipenv](https://github.com/kennethreitz/pipenv).
@@ -73,4 +73,4 @@ pip install natto-py jaconv lxml
       --parallel            specify if processing should be done in parallel
                             (default=True)
     Example usage:
-    $ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --aozora-bunko-repository 'aozorabunko' --out 'Corpora'
+    $ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel

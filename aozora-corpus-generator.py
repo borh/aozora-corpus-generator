@@ -46,8 +46,8 @@ def text_to_tokens(text):
     tokens. Must be subsumed into non-lazy collection.
     '''
     unidic_features = ['pos1', 'pos2', 'pos3', 'pos4', 'cType',
-                       'cForm', 'lForm', 'lemma', 'orth', 'pron', 'orthBase', 'pronBase',
-                       'goshu', 'iType', 'iForm', 'fType', 'fForm']
+                       'cForm', 'lForm', 'lemma', 'orth', 'pron', 'orthBase',
+                       'pronBase', 'goshu', 'iType', 'iForm', 'fType', 'fForm']
 
     with MeCab() as mecab:
         for sentence in split_sentence_ja(text):
@@ -55,7 +55,7 @@ def text_to_tokens(text):
             for node in mecab.parse(sentence, as_nodes=True):
                 if not node.is_eos():
                     token = dict(zip(unidic_features, node.feature.split(',')))
-                    if len(token) == 6:
+                    if len(token) == 6:  # UNK
                         token['orth'] = node.surface
                         token['orthBase'] = node.surface
                         token['lemma'] = node.surface
@@ -66,17 +66,22 @@ def text_to_tokens(text):
 
 
 def wakati(text):
-    '''Returns a sequence of sentences comprised of whitespace separated tokens.'''
+    '''
+    Returns a sequence of sentences comprised of whitespace separated tokens.
+    '''
     for sentence in text_to_tokens(text):
         yield ' '.join(token['orth'] for token in sentence)
 
 
 def tokenize(text, features):
-    '''Returns a sequence of sentences comprised of whitespace separated tokens.'''
+    '''
+    Returns a sequence of sentences comprised of whitespace separated
+    tokens. Supports encoding tokens with other POS or morphological
+    annotations.
+    '''
     for sentence in text_to_tokens(text):
         yield ' '.join('/'.join(token[feature] for feature in features)
                        for token in sentence)
-
 
 
 from pprint import pprint
@@ -87,6 +92,10 @@ def read_aozora_bunko_list(path):
     with ZipFile(path) as z:
         with z.open('list_person_all_extended_utf8.csv', 'r') as f:
             for row in csv.DictReader(TextIOWrapper(f)):
+                # Some works have versions in both new- and old-style
+                # kana. As we are only interested in the new-style
+                # version, we skip the old one while keeping only
+                # old-style works.
                 if row['文字遣い種別'] == '旧字旧仮名':
                     pass
 
@@ -108,16 +117,6 @@ def read_aozora_bunko_list(path):
                         jaconv.kana2alphabet(jaconv.kata2hira(row['作品名読み'][0:5].replace('・', '_')))
                     )
                 }
-
-                # if url_rx.match(row['XHTML/HTMLファイルURL']) and url_rx.match(row['テキストファイルURL']):
-                #     assert url_rx.match(row['XHTML/HTMLファイルURL']).group(1) == url_rx.match(row['テキストファイルURL']).group(1)
-                # else:
-                #     print('txt-xml mismatch')
-                #     pprint(row)
-                # if url_rx.match(row['XHTML/HTMLファイルURL']):
-                #     assert row['XHTML/HTMLファイル符号化方式'] == 'ShiftJIS'
-                # if url_rx.match(row['テキストファイルURL']):
-                #     assert row['テキストファイル符号化方式'] == 'ShiftJIS'
     return d
 
 
@@ -137,7 +136,6 @@ def read_author_title_list(aozora_db, path):
 
 def read_aozora_bunko_xml(path):
     ''''''
-    print(path)
     doc = html.parse(path)
     body = doc.xpath(".//div[@class='main_text']")[0]
     if len(body) == 0:
@@ -148,16 +146,8 @@ def read_aozora_bunko_xml(path):
         e.drop_tree()
 
     text = re.sub(r'[\n\s]+', '\n', ''.join(body.itertext()).strip(), re.M)
-    print(text[0:200])
-    print(len(text))
-    for line in text.splitlines():
-        for sentence in wakati(line):
-            yield sentence
-    #print(''.join(body.itertext()))
-    #print([el.text_contents() for el in body])
 
-    # if main_text_nodes.empty?:
-    #     main_text_nodes = doc.search("body").children
+    return [list(wakati(paragraph)) for paragraph in text.splitlines()]
 
 
 def write_corpus_file(sentences, file_name, prefix):
@@ -186,7 +176,7 @@ $ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author
                         required=False)
     parser.add_argument('--author-title-csv',
                         nargs='+',
-                        help='one or more input file(s) (must be UTF-8 formatted CSV files) (default is \'author-title.csv\')',
+                        help='one or more UTF-8 formatted CSV input file(s) (default is \'author-title.csv\')',
                         default=['author-title.csv'],
                         required=True)
     parser.add_argument('--aozora-bunko-repository',
@@ -225,9 +215,4 @@ if __name__ == '__main__':
     else:
         for file_name, file_path in files:
             convert_corpus_file(file_name, file_path, args['out'])
-            print('{} => {}/{}'.format(file_path, args['out'], file_path))
-
-    # text = normalize_japanese_text('これは、複文になります。でしょうね。これも？どうかなぁ．aaa. Here is, some, english.... Does this work')
-    # print(text)
-    # print([[token for token in tokens] for tokens in text_to_tokens(text)])
-    # print([s for s in wakati(text)])
+            print('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, args['out'], file_name))

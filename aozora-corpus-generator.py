@@ -84,7 +84,6 @@ def tokenize(text, features):
                        for token in sentence)
 
 
-from pprint import pprint
 def read_aozora_bunko_list(path):
     ''''''
     d = defaultdict(dict)

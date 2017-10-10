@@ -139,7 +139,7 @@ def read_aozora_bunko_list(path):
                 # version, we skip the old one while keeping only
                 # old-style works.
                 if row['文字遣い種別'] == '旧字旧仮名':
-                    pass
+                    continue
 
                 author = row['姓'] + row['名']
                 title = row['作品名']

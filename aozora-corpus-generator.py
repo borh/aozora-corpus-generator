@@ -1,3 +1,4 @@
+import sys
 import argparse
 import textwrap
 import pathlib
@@ -12,6 +13,48 @@ from zipfile import ZipFile
 from io import TextIOWrapper
 from lxml import html
 from natto import MeCab
+
+import logging
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.INFO)
+
+
+def make_jis_unicode_map(file_path):
+    d = {}
+    hex_to_code = dict(zip([format(i, 'x').upper() for i in range(33, 33+95)],
+                           ['{0:0>2}'.format(i) for i in range(1, 95)]))
+
+    with open(file_path) as f:
+        for line in f:
+            if line[0] == '#':
+                continue
+
+            jis_field, unicode_field = line.split('\t')[0:2]
+
+            jis_standard, jis_code = jis_field.split('-')
+            if jis_standard == '3':
+                men = 1
+            elif jis_standard == '4':
+                men = 2
+
+            ku = hex_to_code[jis_code[0:2]]
+            ten = hex_to_code[jis_code[2:4]]
+
+            unicode_point = unicode_field.replace('U+', '')
+            if unicode_point == '':  # No mapping exists.
+                continue
+            elif len(unicode_point) > 6:  # 2 characters
+                first, second = unicode_point.split('+')
+                unicode_char = chr(int(first, 16)) + chr(int(second, 16))
+            else:
+                unicode_char = chr(int(unicode_point, 16))
+
+            jis_string = '{}-{}-{}'.format(men, ku, ten)
+
+            d[jis_string] = unicode_char
+    return d
 
 
 def normalize_japanese_text(s):
@@ -106,6 +149,7 @@ def read_aozora_bunko_list(path):
                     id = match.group(1)
                     file_path = match.group(2)
                 except AttributeError:
+                    log.debug('Missing XHTML/HTML file for record {}, skipping...'.format(row))
                     pass
 
                 d[author][title] = {
@@ -131,11 +175,11 @@ def read_author_title_list(aozora_db, path):
                 corpus_files.append((match['file_name'], match['file_path']))
                 db.append(row)
             except KeyError:
-                print('{} not in Aozora Bunko DB. Skipping...'.format(row))
+                log.warn('{} not in Aozora Bunko DB. Skipping...'.format(row))
     return corpus_files, db
 
 
-def read_aozora_bunko_xml(path):
+def read_aozora_bunko_xml(path, gaiji_tr):
     ''''''
     doc = html.parse(path)
     body = doc.xpath(".//div[@class='main_text']")[0]
@@ -146,6 +190,12 @@ def read_aozora_bunko_xml(path):
     # Remove ruby and notes:
     for e in body.xpath(".//span[@class='notes'] | .//rp | .//rt"):
         e.drop_tree()
+
+    #<img src="../../../gaiji/1-14/1-14-45.png" alt="※(「にんべん＋爾」、第3水準1-14-45)" class="gaiji" />
+    for gaiji_el in body.xpath(".//img[@class='gaiji']"):
+        menkuten = re.match(r'.+gaiji/\d+-\d+/(\d-\d+-\d+)\.png', gaiji_el.get('src')).groups(1)[0]
+        gaiji_el.text = gaiji_tr[menkuten]
+        log.debug('Replacing JIS X {} with Unicode \'{}\''.format(menkuten, gaiji_tr[menkuten]))
 
     text = re.sub(r'[\n\s]+', '\n', ''.join(body.itertext()).strip(), re.M)
 
@@ -161,8 +211,8 @@ def write_corpus_file(paragraphs, file_name, prefix):
                 f_plain.write('\n'.join(paragraph) + '\n\n')
 
 
-def convert_corpus_file(file_name, file_path, prefix):
-    write_corpus_file(read_aozora_bunko_xml(file_path), file_name, prefix)
+def convert_corpus_file(file_name, file_path, prefix, gaiji_tr):
+    write_corpus_file(read_aozora_bunko_xml(file_path, gaiji_tr), file_name, prefix)
     return file_name, file_path, prefix
 
 
@@ -173,7 +223,7 @@ def write_metadata_file(files, metadata, prefix):
         writer.writerow(['textid', 'language', 'corpus', 'brow'])
         for (file_name, _), d in zip(files, metadata):
             writer.writerow([file_name + '.txt', 'ja', 'Aozora Bunko', d['brow']])
-        print('Wrote metadata to {}'.format(metadata_fn))
+        log.info('Wrote metadata to {}'.format(metadata_fn))
 
 
 def parse_args():
@@ -207,12 +257,25 @@ $ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author
                         action='store_true',
                         default=False,
                         required=False)
+    parser.add_argument('--verbose',
+                        help='turns on verbose logging (default=False)',
+                        action='store_true',
+                        default=True,
+                        required=False)
 
     return vars(parser.parse_args())
 
 
 if __name__ == '__main__':
     args = parse_args()
+
+    if args['verbose']:
+        log.setLevel(logging.DEBUG)
+        stdout_handler.setLevel(logging.DEBUG)
+
+    log.addHandler(stdout_handler)
+
+    gaiji_tr = make_jis_unicode_map('jisx0213-2004-std.txt')
 
     pathlib.Path(args['out'] + '/Tokenized').mkdir(parents=True, exist_ok=True)
     pathlib.Path(args['out'] + '/Plain').mkdir(parents=True, exist_ok=True)
@@ -229,15 +292,15 @@ if __name__ == '__main__':
 
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [executor.submit(convert_corpus_file, file_name, file_path, args['out'])
+            futures = [executor.submit(convert_corpus_file, file_name, file_path, args['out'], gaiji_tr)
                        for (file_name, file_path) in files]
             for future in concurrent.futures.as_completed(futures):
                 try:
                     file_name, file_path, prefix = future.result()
-                    print('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, prefix, file_name))
+                    log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, prefix, file_name))
                 except Exception:
-                    print('Process {} failed: {}'.format(future, future.result()))
+                    log.error('Process {} failed: {}'.format(future, future.result()))
     else:
         for file_name, file_path in files:
-            convert_corpus_file(file_name, file_path, args['out'])
-            print('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, args['out'], file_name))
+            convert_corpus_file(file_name, file_path, args['out'], gaiji_tr)
+            log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, args['out'], file_name))

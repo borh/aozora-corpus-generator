@@ -17,7 +17,7 @@ Future versions will ease this requirement.
 
 ## Native
 
-You must install [MeCab]() and [UniDic]().
+You must install [MeCab](https://github.com/taku910/mecab) and [UniDic](https://osdn.net/projects/unidic/).
 
 On Debian-based distros, the command below should suffice:
 

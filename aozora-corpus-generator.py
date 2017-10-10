@@ -127,6 +127,10 @@ def tokenize(text, features):
                        for token in sentence)
 
 
+def romanize(s):
+    return jaconv.kana2alphabet(jaconv.kata2hira(s.replace('・', '_')))
+
+
 def read_aozora_bunko_list(path):
     ''''''
     d = defaultdict(dict)

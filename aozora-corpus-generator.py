@@ -22,6 +22,12 @@ stdout_handler.setLevel(logging.INFO)
 
 
 def make_jis_unicode_map(file_path):
+    '''
+    Generates a translation dictionary between the men-ku-ten
+    (i.e. '1-1-24') type of representation of characters in the JIS X
+    0213 standard and Unicode. This format is used to represent
+    so-called 'gaiji' within Aozora Bunko.
+    '''
     d = {}
     hex_to_code = dict(zip([format(i, 'x').upper() for i in range(33, 33+95)],
                            ['{0:0>2}'.format(i) for i in range(1, 95)]))
@@ -132,7 +138,12 @@ def romanize(s):
 
 
 def read_aozora_bunko_list(path):
-    ''''''
+    '''
+    Reads in the list_person_all_extended_utf8.csv of Aozora Bunko and
+    constructs a nested dictionary keyed on author and title. This is
+    then used identify the correct path to the file as well as give
+    more metadata.
+    '''
     d = defaultdict(dict)
     url_rx = re.compile(r'http://www\.aozora\.gr\.jp/cards/(\d+)/(.+)')
     with ZipFile(path) as z:
@@ -186,7 +197,11 @@ def read_aozora_bunko_list(path):
 
 
 def read_author_title_list(aozora_db, path):
-    ''''''
+    '''
+    Reads in the author title table that is used to extract a subset
+    of author-title pairs from Aozora Bunko. The CSV file must contain
+    the columns 'author' and 'title'.
+    '''
     corpus_files = []
     db = []
     with open(path, newline='') as f:
@@ -203,18 +218,24 @@ def read_author_title_list(aozora_db, path):
 
 
 def read_aozora_bunko_xml(path, gaiji_tr):
-    ''''''
+    '''
+    Reads an Aozora Bunko XHTML/HTML file and converts it into plain
+    text. All comments and ruby are removed, and gaiji are replaced
+    with Unicode equivalents.
+    '''
     doc = html.parse(path)
     body = doc.xpath(".//div[@class='main_text']")[0]
     if len(body) == 0:
-        print('WARN: look into this file')
+        log.warn('Error extracting main_text from file {}'.format(path))
         body = doc.xpath(".//div")[0]
+        if len(body) == 0:
+            log.critical('Error extracting text from file {} by any means'.format(path))
 
     # Remove ruby and notes:
     for e in body.xpath(".//span[@class='notes'] | .//rp | .//rt"):
         e.drop_tree()
 
-    #<img src="../../../gaiji/1-14/1-14-45.png" alt="※(「にんべん＋爾」、第3水準1-14-45)" class="gaiji" />
+    # Convert gaiji img tags to Unicode characters:
     for gaiji_el in body.xpath(".//img[@class='gaiji']"):
         menkuten = re.match(r'.+gaiji/\d+-\d+/(\d-\d+-\d+)\.png', gaiji_el.get('src')).groups(1)[0]
         gaiji_el.text = gaiji_tr[menkuten]
@@ -226,7 +247,10 @@ def read_aozora_bunko_xml(path, gaiji_tr):
 
 
 def write_corpus_file(paragraphs, file_name, prefix):
-    ''''''
+    '''
+    Given a sequence of paragraphs and path to output, writes plain
+    and tokenized versions of the paragraphs.sss
+    '''
     with open('{}/Tokenized/{}.txt'.format(prefix, file_name), 'w') as f_tokenized:
         with open('{}/Plain/{}.txt'.format(prefix, file_name), 'w') as f_plain:
             for paragraph in paragraphs:
@@ -235,11 +259,19 @@ def write_corpus_file(paragraphs, file_name, prefix):
 
 
 def convert_corpus_file(file_name, file_path, prefix, gaiji_tr):
+    '''
+    Helper function that reads in html and writes a plain/tokenized
+    version in one step. Needed for concurrent.futures.
+    '''
     write_corpus_file(read_aozora_bunko_xml(file_path, gaiji_tr), file_name, prefix)
     return file_name, file_path, prefix
 
 
 def write_metadata_file(files, metadata, aozora_db, prefix):
+    '''
+    Writes metadata of processed author-title pairs for further
+    analysis.
+    '''
     metadata_fn = '{}/groups.csv'.format(prefix)
     with open(metadata_fn, 'w', newline='') as f:
         writer = csv.writer(f, delimiter='\t')
@@ -269,7 +301,7 @@ def write_metadata_file(files, metadata, aozora_db, prefix):
 
 
 def parse_args():
-    '''Parses and returns program arguments as dictionary.'''
+    '''Parses and returns program arguments as a dictionary.'''
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent('''aozora-corpus-generator extracts given author and book pairs from Aozora Bunko and formats them into (optionally tokenized) plain text files.'''),

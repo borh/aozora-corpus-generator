@@ -145,8 +145,20 @@ def read_aozora_bunko_list(path):
                 if row['文字遣い種別'] == '旧字旧仮名':
                     continue
 
-                author = row['姓'] + row['名']
+                try:
+                    year, month, day = re.match(r'(\d{4})（.+）年\s?(\d{1,2})月(\d{1,2})日', row['底本初版発行年1']).groups()
+                except Exception:
+                    year = ''
+
+                author_ja = row['姓'] + row['名']
+                author_en = row['名ローマ字'] + ' ' + row['姓ローマ字']
                 title = row['作品名']
+                title_ja = title
+                title_en = jaconv.kana2alphabet(jaconv.kata2hira(row['作品名読み'])).title()
+                subtitle = row['副題']
+                if subtitle != '':
+                    title_ja += ': ' + subtitle
+                    title_en += ': ' + romanize(row['副題読み']).title()
 
                 try:
                     match = url_rx.match(row['XHTML/HTMLファイルURL'])
@@ -156,12 +168,18 @@ def read_aozora_bunko_list(path):
                     log.debug('Missing XHTML/HTML file for record {}, skipping...'.format(row))
                     pass
 
-                d[author][title] = {
+                d[author_ja][title] = {
+                    'author_ja': author_ja,
+                    'author': author_en,
+                    'title_ja': title_ja,
+                    'title': title_en,
+                    'year': year,
+                    'genre': row['分類番号'],
                     'file_path': 'aozorabunko/cards/{}/{}'.format(id, file_path),
                     'file_name': '{}_{}_{}'.format(  # TODO Do we need to shorthen these?
                         row['姓ローマ字'],
                         row['名ローマ字'][0:1],
-                        jaconv.kana2alphabet(jaconv.kata2hira(row['作品名読み'][0:5].replace('・', '_'))).title()
+                        romanize(row['作品名読み'][0:5]).title()
                     )
                 }
     return d
@@ -175,7 +193,8 @@ def read_author_title_list(aozora_db, path):
         r = csv.DictReader(f)
         for row in r:
             try:
-                match = aozora_db[row['author'].replace(' ', '')][row['title']]
+                row['author'] = re.sub(r'\s', '', row['author'])
+                match = aozora_db[row['author']][row['title']]
                 corpus_files.append((match['file_name'], match['file_path']))
                 db.append(row)
             except KeyError:
@@ -220,13 +239,32 @@ def convert_corpus_file(file_name, file_path, prefix, gaiji_tr):
     return file_name, file_path, prefix
 
 
-def write_metadata_file(files, metadata, prefix):
+def write_metadata_file(files, metadata, aozora_db, prefix):
     metadata_fn = '{}/groups.csv'.format(prefix)
     with open(metadata_fn, 'w', newline='') as f:
         writer = csv.writer(f, delimiter='\t')
-        writer.writerow(['textid', 'language', 'corpus', 'brow'])
+        writer.writerow(['textid',
+                         'language',
+                         'corpus',
+                         'author_ja',
+                         'title_ja',
+                         'author',
+                         'title',
+                         'year',
+                         'genre',
+                         'brow'])
         for (file_name, _), d in zip(files, metadata):
-            writer.writerow([file_name + '.txt', 'ja', 'Aozora Bunko', d['brow']])
+            m = aozora_db[d['author']][d['title']]
+            writer.writerow([file_name + '.txt',
+                             'ja',
+                             'Aozora Bunko',
+                             m['author_ja'],
+                             m['title_ja'],
+                             m['author'],
+                             m['title'],
+                             m['year'],
+                             m['genre'],
+                             d['brow']])
         log.info('Wrote metadata to {}'.format(metadata_fn))
 
 
@@ -292,7 +330,7 @@ if __name__ == '__main__':
         files.extend(fs)
         metadata.extend(db)
 
-    write_metadata_file(files, metadata, args['out'])
+    write_metadata_file(files, metadata, aozora_db, args['out'])
 
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:

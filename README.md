@@ -64,13 +64,15 @@ pip install natto-py jaconv lxml
                             specify which features should be extracted from
                             morphemes (default is 'orth')
       --author-title-csv AUTHOR_TITLE_CSV [AUTHOR_TITLE_CSV ...]
-                            one or more input file(s) (must be UTF-8 formatted CSV
-                            files) (default is 'author-title.csv')
+                            one or more UTF-8 formatted CSV input file(s) (default
+                            is 'author-title.csv')
       --aozora-bunko-repository AOZORA_BUNKO_REPOSITORY
                             path to the aozorabunko git repository
       --out OUT             output (plain, tokenized) files into given output
                             directory
       --parallel            specify if processing should be done in parallel
                             (default=True)
+      --verbose             turns on verbose logging (default=False)
+
     Example usage:
-    $ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+    python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel

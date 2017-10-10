@@ -232,7 +232,7 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent('''aozora-corpus-generator extracts given author and book pairs from Aozora Bunko and formats them into (optionally tokenized) plain text files.'''),
         epilog=textwrap.dedent('''Example usage:
-$ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel''')
+python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel''')
     )
     parser.add_argument('--features',
                         nargs='+',

@@ -197,7 +197,7 @@ def read_aozora_bunko_xml(path, gaiji_tr):
         gaiji_el.text = gaiji_tr[menkuten]
         log.debug('Replacing JIS X {} with Unicode \'{}\''.format(menkuten, gaiji_tr[menkuten]))
 
-    text = re.sub(r'[\n\s]+', '\n', ''.join(body.itertext()).strip(), re.M)
+    text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
 
     return [list(wakati(paragraph)) for paragraph in text.splitlines()]
 

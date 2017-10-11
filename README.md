@@ -52,6 +52,22 @@ pip install natto-py jaconv lxml
 
 # Usage
 
+Clone the repository and run:
+
+```bash
+git clone https://github.com/borh/aozora-corpus-generator.git
+cd aozora-corpus-generator
+pipenv install
+pipenv shell
+python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+```
+
+## Parameters
+
+```bash
+python aozora-corpus-generator.py --help
+```
+
     usage: aozora-corpus-generator.py [-h] [--features FEATURES [FEATURES ...]]
                                       --author-title-csv AUTHOR_TITLE_CSV
                                       [AUTHOR_TITLE_CSV ...]

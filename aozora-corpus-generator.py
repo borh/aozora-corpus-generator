@@ -156,10 +156,22 @@ def read_aozora_bunko_list(path):
                 if row['文字遣い種別'] == '旧字旧仮名':
                     continue
 
-                try:
-                    year, month, day = re.match(r'(\d{4})（.+）年\s?(\d{1,2})月(\d{1,2})日', row['底本初版発行年1']).groups()
-                except Exception:
-                    year = ''
+                # Use the lower value from 底本初版発行年1 and 初出
+                year = ''
+
+                year_rx = re.compile(r'(\d{4})（.+）年\s?(\d{1,2})月((\d{1,2})日)?')
+
+                year_matches = year_rx.match(row['底本初版発行年1'])
+                if year_matches and year_matches.groups():
+                    year = year_matches.groups()[0]
+
+                year_alternate_matches = year_rx.search(row['初出'])
+                if year_alternate_matches and year_alternate_matches.groups():
+                    alt_year = year_alternate_matches.groups()[0]
+                    if year == '':
+                        year = alt_year
+                    elif int(alt_year) < int(year):
+                        year = alt_year
 
                 author_ja = row['姓'] + row['名']
                 author_en = row['名ローマ字'] + ' ' + row['姓ローマ字']

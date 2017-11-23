@@ -212,7 +212,13 @@ def read_author_title_list(aozora_db, path):
     '''
     Reads in the author title table that is used to extract a subset
     of author-title pairs from Aozora Bunko. The CSV file must contain
-    the columns 'author' and 'title'.
+    the columns 'author' and 'title'. Output is a list of corpus files
+    and a database containing metadata.
+
+    The reader supports an optional '*' value for the title field. If
+    it encounters one, it will match on all the works of the
+    author. To extract all texts from Aozora Bunko, see the `--all`
+    flag.
     '''
     corpus_files = []
     db = []
@@ -221,9 +227,19 @@ def read_author_title_list(aozora_db, path):
         for row in r:
             try:
                 row['author'] = re.sub(r'\s', '', row['author'])
-                match = aozora_db[row['author']][row['title']]
-                corpus_files.append((match['file_name'], match['file_path']))
-                db.append(row)
+                if row['title'] == '*':
+                    works = {title: (m['file_name'], m['file_path'])
+                             for title, m in aozora_db[row['author']].items()}
+                    corpus_files.extend(file_name_path
+                                        for file_name_path in works.values())
+                    db.extend({'author': row['author'],
+                               'title': title,
+                               'brow': row['brow']}
+                              for title in works.keys())
+                else:
+                    match = aozora_db[row['author']][row['title']]
+                    corpus_files.append((match['file_name'], match['file_path']))
+                    db.append(row)
             except KeyError:
                 log.warn('{} not in Aozora Bunko DB. Skipping...'.format(row))
     return corpus_files, db

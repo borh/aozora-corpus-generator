@@ -29,7 +29,7 @@ def make_jis_unicode_map(file_path):
     so-called 'gaiji' within Aozora Bunko.
     '''
     d = {}
-    hex_to_code = dict(zip([format(i, 'x').upper() for i in range(33, 33+95)],
+    hex_to_code = dict(zip([format(i, 'X') for i in range(33, 33+95)],
                            ['{0:0>2}'.format(i) for i in range(1, 95)]))
 
     with open(file_path) as f:

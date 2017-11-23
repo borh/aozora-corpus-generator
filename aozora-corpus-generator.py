@@ -119,7 +119,7 @@ def wakati(text):
     Returns a sequence of sentences comprised of whitespace separated tokens.
     '''
     for sentence in text_to_tokens(text):
-        yield ' '.join(token['orth'] for token in sentence)
+        yield [token['orth'] for token in sentence]
 
 
 def tokenize(text, features):
@@ -129,8 +129,8 @@ def tokenize(text, features):
     annotations.
     '''
     for sentence in text_to_tokens(text):
-        yield ' '.join('/'.join(token[feature] for feature in features)
-                       for token in sentence)
+        yield ['/'.join(token[feature] for feature in features)
+               for token in sentence]
 
 
 def romanize(s):
@@ -243,28 +243,37 @@ def read_aozora_bunko_xml(path, gaiji_tr):
 
     text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
 
-    return [list(wakati(paragraph)) for paragraph in text.splitlines()]
+    paragraphs = [list(wakati(paragraph)) for paragraph in text.splitlines()]
+    tokens = sum(len(sentence)
+                 for paragraph in paragraphs
+                 for sentence in paragraph)
+
+    return paragraphs, tokens
 
 
 def write_corpus_file(paragraphs, file_name, prefix):
     '''
     Given a sequence of paragraphs and path to output, writes plain
-    and tokenized versions of the paragraphs.sss
+    and tokenized versions of the paragraphs.
     '''
-    with open('{}/Tokenized/{}.txt'.format(prefix, file_name), 'w') as f_tokenized:
-        with open('{}/Plain/{}.txt'.format(prefix, file_name), 'w') as f_plain:
-            for paragraph in paragraphs:
-                f_tokenized.write('<PGB>\n'.join(re.sub(r'\s+', '\n', sentence) + '\n<EOS>\n' for sentence in paragraph))
-                f_plain.write('\n'.join(paragraph) + '\n\n')
+    with open('{}/Tokenized/{}.txt'.format(prefix, file_name), 'w') as f_tokenized, \
+         open('{}/Plain/{}.txt'.format(prefix, file_name), 'w') as f_plain:
+        for paragraph in paragraphs:
+            f_tokenized.write('<PGB>\n'.join(re.sub(r'\s+', '\n', ' '.join(sentence)) + '\n<EOS>\n'
+                                             for sentence in paragraph))
+            f_plain.write('\n'.join(''.join(sentence) for sentence in paragraph) + '\n\n')
 
 
-def convert_corpus_file(file_name, file_path, prefix, gaiji_tr):
+def convert_corpus_file(file_name, file_path, prefix, gaiji_tr, min_tokens=False):
     '''
     Helper function that reads in html and writes a plain/tokenized
     version in one step. Needed for concurrent.futures.
     '''
-    write_corpus_file(read_aozora_bunko_xml(file_path, gaiji_tr), file_name, prefix)
-    return file_name, file_path, prefix
+    paragraphs, tokens = read_aozora_bunko_xml(file_path, gaiji_tr)
+    reject = True if (min_tokens and tokens < min_tokens) else False
+    if not reject:
+        write_corpus_file(paragraphs, file_name, prefix)
+    return file_name, file_path, prefix, reject
 
 
 def write_metadata_file(files, metadata, aozora_db, prefix):

@@ -309,7 +309,11 @@ def convert_corpus_file(file_name, file_path, prefix, gaiji_tr, min_tokens=False
     Helper function that reads in html and writes a plain/tokenized
     version in one step. Needed for concurrent.futures.
     '''
-    paragraphs, tokens = read_aozora_bunko_xml(file_path, gaiji_tr)
+    try:
+        paragraphs, tokens = read_aozora_bunko_xml(file_path, gaiji_tr)
+    except UnicodeDecodeError as e:
+        paragraphs, tokens = [], 0
+        log.warn(f'Decoding of {file_path} failed with {e}')
     reject = True if (min_tokens and tokens < min_tokens) else False
     if not reject:
         write_corpus_file(paragraphs, file_name, prefix)

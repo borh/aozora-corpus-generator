@@ -363,22 +363,36 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
     )
     parser.add_argument('--features',
                         nargs='+',
-                        help='specify which features should be extracted from morphemes (default is \'orth\')',
+                        help='specify which features should be extracted from morphemes (default=\'orth\')',
                         default=['orth'],
                         required=False)
     parser.add_argument('--author-title-csv',
                         nargs='+',
-                        help='one or more UTF-8 formatted CSV input file(s) (default is \'author-title.csv\')',
+                        help='one or more UTF-8 formatted CSV input file(s) (default=\'author-title.csv\')',
                         default=['author-title.csv'],
                         required=True)
     parser.add_argument('--aozora-bunko-repository',
-                        help='path to the aozorabunko git repository',
+                        help='path to the aozorabunko git repository (default=\'aozorabunko/index_pages/list_person_all_extended_utf8.zip\')',
                         default='aozorabunko/index_pages/list_person_all_extended_utf8.zip',
                         required=False)
     parser.add_argument('--out',
-                        help='output (plain, tokenized) files into given output directory',
+                        help='output (plain, tokenized) files into given output directory (default=Corpora)',
                         default='Corpora',
                         required=True)
+    parser.add_argument('--all', # TODO
+                        help='specify if all Aozora Bunko texts should be extracted, ignoring the author-title.csv (default=False)',
+                        action='store_true',
+                        default=False,
+                        required=False)
+    parser.add_argument('--min-tokens',
+                        help='specify minimum token count to filter files by (default=30000)',
+                        default=30000,
+                        required=False)
+    parser.add_argument('--incremental', # TODO
+                        help='do not overwrite existing corpus files (default=False)',
+                        action='store_true',
+                        default=False,
+                        required=False)
     parser.add_argument('--parallel',
                         help='specify if processing should be done in parallel (default=True)',
                         action='store_true',
@@ -415,19 +429,40 @@ if __name__ == '__main__':
         files.extend(fs)
         metadata.extend(db)
 
-    write_metadata_file(files, metadata, aozora_db, args['out'])
+    rejected_files = set()
 
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [executor.submit(convert_corpus_file, file_name, file_path, args['out'], gaiji_tr)
+            futures = [executor.submit(convert_corpus_file,
+                                       file_name, file_path,
+                                       args['out'], gaiji_tr,
+                                       args['min_tokens'])
                        for (file_name, file_path) in files]
             for future in concurrent.futures.as_completed(futures):
                 try:
-                    file_name, file_path, prefix = future.result()
-                    log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, prefix, file_name))
+                    file_name, file_path, prefix, rejected = future.result()
+                    if rejected:
+                        rejected_files.add(file_path)
+                        log.warn(f'{file_name} rejected because it contains < {args["min_tokens"]} tokens.')
+                    else:
+                        log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, prefix, file_name))
                 except Exception:
                     log.error('Process {} failed: {}'.format(future, future.result()))
     else:
         for file_name, file_path in files:
-            convert_corpus_file(file_name, file_path, args['out'], gaiji_tr)
-            log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, args['out'], file_name))
+            _, _, _, rejected = convert_corpus_file(file_name, file_path, args['out'], gaiji_tr, args['min_tokens'])
+            if rejected:
+                rejected_files.add(file_path)
+                log.warn(f'{file_name} rejected because it contains < {args["min_tokens"]} tokens.')
+            else:
+                log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, args['out'], file_name))
+
+    rejected_indeces = {idx for idx, (_, file_path) in enumerate(files)
+                        if file_path in rejected_files}
+
+    files = [file for idx, file in enumerate(files)
+             if idx not in rejected_indeces]
+    metadata = [m for idx, m in enumerate(metadata)
+                if idx not in rejected_indeces]
+
+    write_metadata_file(files, metadata, aozora_db, args['out'])

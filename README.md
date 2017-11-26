@@ -47,7 +47,7 @@ pipenv shell
 For those using `pip`, you can install all the dependencies using the command below:
 
 ```bash
-pip install natto-py jaconv lxml
+pip install natto-py jaconv lxml html5_parser
 ```
 
 # Usage

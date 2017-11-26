@@ -11,7 +11,7 @@ import csv
 from collections import defaultdict
 from zipfile import ZipFile
 from io import TextIOWrapper
-from lxml import html
+import html5_parser as html
 from natto import MeCab
 
 import logging
@@ -251,17 +251,29 @@ def read_aozora_bunko_xml(path, gaiji_tr):
     text. All comments and ruby are removed, and gaiji are replaced
     with Unicode equivalents.
     '''
-    doc = html.parse(path)
-    body = doc.xpath(".//div[@class='main_text']")[0]
+
+    # TODO
+    # <!R> symbol in nkf -w aozorabunko/cards/000158/files/835.html|less
+    # ...間には、<!R>調戯（からかい）半分...
+
+    with open(path, 'rb') as f:
+        doc = html.parse(f.read(), maybe_xhtml=False, fallback_encoding='shift_jis', return_root=False)
+    body = doc.xpath(".//div[@class='main_text']")
+
     if len(body) == 0:
-        log.warn('Error extracting main_text from file {}'.format(path))
-        body = doc.xpath(".//div")[0]
+        log.warn('Error extracting main_text from file {}, trying workaround...'.format(path))
+        body = doc.xpath(".//body")
         if len(body) == 0:
             log.critical('Error extracting text from file {} by any means'.format(path))
+            return [[]], 0
+        else:
+            body = body[0]
+    else:
+        body = body[0]
 
     # Remove ruby and notes:
     for e in body.xpath(".//span[@class='notes'] | .//rp | .//rt"):
-        e.drop_tree()
+        e.getparent().remove(e)
 
     # Convert gaiji img tags to Unicode characters:
     for gaiji_el in body.xpath(".//img[@class='gaiji']"):

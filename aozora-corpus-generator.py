@@ -164,8 +164,10 @@ def read_aozora_bunko_list(path, ndc_tr):
                 # old-style works.
                 if row['文字遣い種別'] == '旧字旧仮名':
                     continue
+                elif row['文字遣い種別'] == '新字旧仮名':
+                    log.warn(f'Processing old-syle kana work: {row}')
 
-                # Use the lower value from 底本初版発行年1 and 初出
+                # Use the lower value from 底本初版発行年1 and 初出:
                 year = ''
 
                 year_rx = re.compile(r'(\d{4})（.+）年\s?(\d{1,2})月((\d{1,2})日)?')

@@ -72,23 +72,30 @@ python aozora-corpus-generator.py --help
                                       --author-title-csv AUTHOR_TITLE_CSV
                                       [AUTHOR_TITLE_CSV ...]
                                       [--aozora-bunko-repository AOZORA_BUNKO_REPOSITORY]
-                                      --out OUT [--parallel]
+                                      --out OUT [--all] [--min-tokens MIN_TOKENS]
+                                      [--incremental] [--parallel] [--verbose]
     aozora-corpus-generator extracts given author and book pairs from Aozora Bunko and formats them into (optionally tokenized) plain text files.
     optional arguments:
       -h, --help            show this help message and exit
       --features FEATURES [FEATURES ...]
                             specify which features should be extracted from
-                            morphemes (default is 'orth')
+                            morphemes (default='orth')
       --author-title-csv AUTHOR_TITLE_CSV [AUTHOR_TITLE_CSV ...]
-                            one or more UTF-8 formatted CSV input file(s) (default
-                            is 'author-title.csv')
+                            one or more UTF-8 formatted CSV input file(s)
+                            (default='author-title.csv')
       --aozora-bunko-repository AOZORA_BUNKO_REPOSITORY
-                            path to the aozorabunko git repository
+                            path to the aozorabunko git repository (default='aozor
+                            abunko/index_pages/list_person_all_extended_utf8.zip')
       --out OUT             output (plain, tokenized) files into given output
-                            directory
+                            directory (default=Corpora)
+      --all                 specify if all Aozora Bunko texts should be extracted,
+                            ignoring the author-title.csv (default=False)
+      --min-tokens MIN_TOKENS
+                            specify minimum token count to filter files by
+                            (default=30000)
+      --incremental         do not overwrite existing corpus files (default=False)
       --parallel            specify if processing should be done in parallel
                             (default=True)
       --verbose             turns on verbose logging (default=False)
-
     Example usage:
     python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel

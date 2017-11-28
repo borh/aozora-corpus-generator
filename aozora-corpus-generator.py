@@ -184,6 +184,11 @@ def read_aozora_bunko_list(path, ndc_tr):
                     elif int(alt_year) < int(year):
                         year = alt_year
 
+                # Sanity check for year:
+                year_death = re.search(r'\d{4}', row['没年月日'])
+                if year_death and year_death.groups() and int(year_death.groups()[0]) < int(year):
+                    year = '<' + year_death  # Specify upper bound as last resort.
+
                 author_ja = row['姓'] + row['名']
                 author_en = row['名ローマ字'] + ' ' + row['姓ローマ字']
                 title = row['作品名']

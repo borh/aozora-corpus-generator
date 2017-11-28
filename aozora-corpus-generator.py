@@ -63,6 +63,15 @@ def make_jis_unicode_map(file_path):
     return d
 
 
+def make_ndc_map():
+    with open('ndc-3digits.tsv') as f:
+        d = {}
+        for line in f:
+            code, label = line.rstrip('\n').split('\t')
+            d[code] = label
+        return d
+
+
 def normalize_japanese_text(s):
     '''
     Normalizes to NFKC Unicode norm and converts all half-width
@@ -137,7 +146,7 @@ def romanize(s):
     return jaconv.kana2alphabet(jaconv.kata2hira(s.replace('・', '_').replace('ゔ', 'v')))
 
 
-def read_aozora_bunko_list(path):
+def read_aozora_bunko_list(path, ndc_tr):
     '''
     Reads in the list_person_all_extended_utf8.csv of Aozora Bunko and
     constructs a nested dictionary keyed on author and title. This is
@@ -191,13 +200,26 @@ def read_aozora_bunko_list(path):
                     log.debug('Missing XHTML/HTML file for record {}, skipping...'.format(row))
                     pass
 
+                ndc = row['分類番号'].replace('NDC ', '').replace('K', '')
+
+                if len(ndc) > 3:
+                    ndcs = ndc.split()
+                    ndc = '/'.join(ndc_tr[n] for n in ndcs)
+                elif not ndc:
+                    ndc = ''
+                else:
+                    ndc = ndc_tr[ndc]
+
+                if 'K' in row['分類番号']:
+                    ndc += ' (児童書)'
+
                 d[author_ja][title] = {
                     'author_ja': author_ja,
                     'author': author_en,
                     'title_ja': title_ja,
                     'title': title_en,
                     'year': year,
-                    'genre': row['分類番号'],
+                    'ndc': ndc,
                     'file_path': 'aozorabunko/cards/{}/{}'.format(id, file_path),
                     'file_name': '{}_{}_{}'.format(  # TODO Do we need to shorthen these?
                         row['姓ローマ字'],
@@ -336,7 +358,9 @@ def write_metadata_file(files, metadata, aozora_db, prefix):
                          'author',
                          'title',
                          'year',
+                         'ndc',
                          'genre',
+                         'comments',
                          'brow'])
         for (file_name, _), d in zip(files, metadata):
             m = aozora_db[d['author']][d['title']]
@@ -348,7 +372,9 @@ def write_metadata_file(files, metadata, aozora_db, prefix):
                              m['author'],
                              m['title'],
                              m['year'],
-                             m['genre'],
+                             m['ndc'],
+                             d['genre'],
+                             d['comments'],
                              d['brow']])
         log.info('Wrote metadata to {}'.format(metadata_fn))
 
@@ -417,11 +443,12 @@ if __name__ == '__main__':
     log.addHandler(stdout_handler)
 
     gaiji_tr = make_jis_unicode_map('jisx0213-2004-std.txt')
+    ndc_tr = make_ndc_map()
 
     pathlib.Path(args['out'] + '/Tokenized').mkdir(parents=True, exist_ok=True)
     pathlib.Path(args['out'] + '/Plain').mkdir(parents=True, exist_ok=True)
 
-    aozora_db = read_aozora_bunko_list(args['aozora_bunko_repository'])
+    aozora_db = read_aozora_bunko_list(args['aozora_bunko_repository'], ndc_tr)
 
     files, metadata = [], []
     for csv_path in args['author_title_csv']:

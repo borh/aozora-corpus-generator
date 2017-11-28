@@ -263,7 +263,9 @@ def read_author_title_list(aozora_db, path):
                                         for file_name_path in works.values())
                     db.extend({'author': row['author'],
                                'title': title,
-                               'brow': row['brow']}
+                               'brow': row['brow'],
+                               'genre': '',
+                               'comments': ''}
                               for title in works.keys())
                 else:
                     match = aozora_db[row['author']][row['title']]

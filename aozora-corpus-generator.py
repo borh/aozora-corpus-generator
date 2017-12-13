@@ -427,7 +427,7 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
                         help='output (plain, tokenized) files into given output directory (default=Corpora)',
                         default='Corpora',
                         required=True)
-    parser.add_argument('--all', # TODO
+    parser.add_argument('--all',
                         help='specify if all Aozora Bunko texts should be extracted, ignoring the author-title.csv (default=False)',
                         action='store_true',
                         default=False,

@@ -418,7 +418,7 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
                         nargs='+',
                         help='one or more UTF-8 formatted CSV input file(s) (default=\'author-title.csv\')',
                         default=['author-title.csv'],
-                        required=True)
+                        required=False)
     parser.add_argument('--aozora-bunko-repository',
                         help='path to the aozorabunko git repository (default=\'aozorabunko/index_pages/list_person_all_extended_utf8.zip\')',
                         default='aozorabunko/index_pages/list_person_all_extended_utf8.zip',

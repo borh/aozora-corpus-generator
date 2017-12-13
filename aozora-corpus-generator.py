@@ -234,6 +234,7 @@ def read_aozora_bunko_list(path, ndc_tr):
                 d[author_ja][title] = {
                     'author_ja': author_ja,
                     'author': author_en,
+                    'author_year': f'{row["生年月日"]}--{row["没年月日"]}',
                     'title_ja': title_ja,
                     'title': title_en,
                     'year': year,

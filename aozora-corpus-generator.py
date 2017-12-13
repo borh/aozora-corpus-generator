@@ -436,6 +436,11 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
                         help='specify minimum token count to filter files by (default=30000)',
                         default=30000,
                         required=False)
+    parser.add_argument('--no-punc',
+                        help='specify if punctuation should be discarded from tokenized version (default=False)',
+                        action='store_true',
+                        default=False,
+                        required=False)
     parser.add_argument('--incremental', # TODO
                         help='do not overwrite existing corpus files (default=False)',
                         action='store_true',

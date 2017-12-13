@@ -288,17 +288,12 @@ def read_author_title_list(aozora_db, path):
     return corpus_files, db
 
 
-def read_aozora_bunko_xml(path, gaiji_tr):
+def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
     '''
     Reads an Aozora Bunko XHTML/HTML file and converts it into plain
     text. All comments and ruby are removed, and gaiji are replaced
     with Unicode equivalents.
     '''
-
-    # TODO
-    # <!R> symbol in nkf -w aozorabunko/cards/000158/files/835.html|less
-    # ...間には、<!R>調戯（からかい）半分...
-
     with open(path, 'rb') as f:
         doc = html.parse(f.read(), maybe_xhtml=False, fallback_encoding='shift_jis', return_root=False)
     body = doc.xpath(".//div[@class='main_text']")
@@ -326,41 +321,41 @@ def read_aozora_bunko_xml(path, gaiji_tr):
 
     text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
 
-    paragraphs = [list(wakati(paragraph)) for paragraph in text.splitlines()]
-    tokens = sum(len(sentence)
-                 for paragraph in paragraphs
-                 for sentence in paragraph)
+    paragraphs = [list(wakati(paragraph, no_punc)) for paragraph in text.splitlines()]
+    token_count = sum(len(sentence)
+                      for paragraph in paragraphs
+                      for sentence in paragraph)
 
-    return paragraphs, tokens
+    return text, paragraphs, token_count
 
 
-def write_corpus_file(paragraphs, file_name, prefix):
+def write_corpus_file(text, paragraphs, file_name, prefix):
     '''
     Given a sequence of paragraphs and path to output, writes plain
     and tokenized versions of the paragraphs.
     '''
     with open('{}/Tokenized/{}.txt'.format(prefix, file_name), 'w') as f_tokenized, \
          open('{}/Plain/{}.txt'.format(prefix, file_name), 'w') as f_plain:
+        f_plain.write(text)
         for paragraph in paragraphs:
             f_tokenized.write('<PGB>\n'.join(re.sub(r'\s+', '\n', ' '.join(sentence)) + '\n<EOS>\n'
                                              for sentence in paragraph))
-            f_plain.write('\n'.join(''.join(sentence) for sentence in paragraph) + '\n\n')
 
 
-def convert_corpus_file(file_name, file_path, prefix, gaiji_tr, min_tokens=False):
+def convert_corpus_file(file_name, file_path, prefix, gaiji_tr, no_punc=True, min_tokens=False):
     '''
     Helper function that reads in html and writes a plain/tokenized
     version in one step. Needed for concurrent.futures.
     '''
     try:
-        paragraphs, tokens = read_aozora_bunko_xml(file_path, gaiji_tr)
+        text, paragraphs, token_count = read_aozora_bunko_xml(file_path, gaiji_tr, no_punc)
     except UnicodeDecodeError as e:
-        paragraphs, tokens = [], 0
+        text, paragraphs, token_count = '', [], 0
         log.warn(f'Decoding of {file_path} failed with {e}')
-    reject = True if (min_tokens and tokens < min_tokens) else False
+    reject = True if (min_tokens and token_count < min_tokens) else False
     if not reject:
-        write_corpus_file(paragraphs, file_name, prefix)
-    return file_name, file_path, prefix, reject
+        write_corpus_file(text, paragraphs, file_name, prefix)
+    return file_name, file_path, prefix, token_count, reject
 
 
 def write_metadata_file(files, metadata, aozora_db, prefix):
@@ -472,23 +467,39 @@ if __name__ == '__main__':
     aozora_db = read_aozora_bunko_list(args['aozora_bunko_repository'], ndc_tr)
 
     files, metadata = [], []
-    for csv_path in args['author_title_csv']:
-        fs, db = read_author_title_list(aozora_db, csv_path)
-        files.extend(fs)
-        metadata.extend(db)
+    if args['all']:
+        for author_ja, titles in aozora_db.items():
+            for title, title_dict in titles.items():
+                files.append((title_dict['file_name'], title_dict['file_path']))
+                metadata.append({
+                    'author': title_dict['author'],
+                    'title': title,
+                    'brow': '',
+                    'genre': '',
+                    'comments': ''
+                })
+    else:
+        for csv_path in args['author_title_csv']:
+            fs, db = read_author_title_list(aozora_db, csv_path)
+            files.extend(fs)
+            metadata.extend(db)
 
     rejected_files = set()
+
+    token_counts = {}
 
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(convert_corpus_file,
                                        file_name, file_path,
                                        args['out'], gaiji_tr,
+                                       args['no_punc'],
                                        args['min_tokens'])
                        for (file_name, file_path) in files]
             for future in concurrent.futures.as_completed(futures):
                 try:
-                    file_name, file_path, prefix, rejected = future.result()
+                    file_name, file_path, prefix, token_count, rejected = future.result()
+                    token_counts[file_path] = token_count
                     if rejected:
                         rejected_files.add(file_path)
                         log.warn(f'{file_name} rejected because it contains < {args["min_tokens"]} tokens.')
@@ -498,7 +509,8 @@ if __name__ == '__main__':
                     log.error('Process {} failed: {}'.format(future, future.result()))
     else:
         for file_name, file_path in files:
-            _, _, _, rejected = convert_corpus_file(file_name, file_path, args['out'], gaiji_tr, args['min_tokens'])
+            _, _, _, token_count, rejected = convert_corpus_file(file_name, file_path, args['out'], gaiji_tr, args['no_punc'], args['min_tokens'])
+            token_counts[file_path] = token_count
             if rejected:
                 rejected_files.add(file_path)
                 log.warn(f'{file_name} rejected because it contains < {args["min_tokens"]} tokens.')

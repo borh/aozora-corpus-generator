@@ -435,6 +435,7 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
     parser.add_argument('--min-tokens',
                         help='specify minimum token count to filter files by (default=30000)',
                         default=30000,
+                        type=int,
                         required=False)
     parser.add_argument('--no-punc',
                         help='specify if punctuation should be discarded from tokenized version (default=False)',

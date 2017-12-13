@@ -469,6 +469,10 @@ if __name__ == '__main__':
 
     log.addHandler(stdout_handler)
 
+    if not args['author_title_csv'] and not args['all']:
+        print('Please specify the "--author-title-csv"  or "--all" option.\nAborting.')
+        sys.exit(1)
+
     gaiji_tr = make_jis_unicode_map('jisx0213-2004-std.txt')
     ndc_tr = make_ndc_map()
 

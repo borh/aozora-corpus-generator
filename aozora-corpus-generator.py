@@ -123,15 +123,24 @@ def text_to_tokens(text):
             yield tokens
 
 
-def wakati(text):
+PUNC_RX = re.compile(r'^((補助)?記号|空白)$')
+NUMBER_RX = re.compile(r'^[\d０-９一-九]+$')
+
+
+def wakati(text, no_punc=True):
     '''
     Returns a sequence of sentences comprised of whitespace separated tokens.
     '''
     for sentence in text_to_tokens(text):
-        yield [token['orth'] for token in sentence]
+        if no_punc:
+            yield [token['orth'] for token in sentence
+                   if not PUNC_RX.match(token['pos1']) and
+                   not (token['pos2'] == '数詞' and NUMBER_RX.match(token['orth']))]
+        else:
+            yield [token['orth'] for token in sentence]
 
 
-def tokenize(text, features):
+def tokenize(text, features, no_punc=True):
     '''
     Returns a sequence of sentences comprised of whitespace separated
     tokens. Supports encoding tokens with other POS or morphological
@@ -139,7 +148,10 @@ def tokenize(text, features):
     '''
     for sentence in text_to_tokens(text):
         yield ['/'.join(token[feature] for feature in features)
-               for token in sentence]
+               for token in sentence
+               if no_punc
+               or not re.match(r'^((補助)?記号|空白)', token['pos1'])
+               or not re.match(r'^数詞', token['pos2'])]
 
 
 def romanize(s):

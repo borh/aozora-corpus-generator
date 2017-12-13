@@ -369,11 +369,14 @@ def write_metadata_file(files, metadata, aozora_db, prefix):
         writer.writerow(['textid',
                          'language',
                          'corpus',
+                         'corpus_id',
                          'author_ja',
                          'title_ja',
                          'author',
                          'title',
+                         'author_year',
                          'year',
+                         'token_count',
                          'ndc',
                          'genre',
                          'comments',
@@ -383,11 +386,14 @@ def write_metadata_file(files, metadata, aozora_db, prefix):
             writer.writerow([file_name + '.txt',
                              'ja',
                              'Aozora Bunko',
+                             m['file_path'],
                              m['author_ja'],
                              m['title_ja'],
                              m['author'],
                              m['title'],
+                             m['author_year'],
                              m['year'],
+                             m['token_count'],
                              m['ndc'],
                              d['genre'],
                              d['comments'],
@@ -522,6 +528,12 @@ if __name__ == '__main__':
 
     files = [file for idx, file in enumerate(files)
              if idx not in rejected_indeces]
+    for m, ts in aozora_db.items():
+        for _, t in ts.items():
+            try:
+                t['token_count'] = token_counts[t['file_path']]
+            except KeyError:
+                pass
     metadata = [m for idx, m in enumerate(metadata)
                 if idx not in rejected_indeces]
 

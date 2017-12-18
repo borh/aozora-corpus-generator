@@ -235,6 +235,11 @@ def read_aozora_bunko_list(path, ndc_tr):
                 if 'K' in row['分類番号']:
                     ndc += ' (児童書)'
 
+                if title in d[author_ja]:
+                    # Remove translations.
+                    d[author_ja].pop(title, None)
+                    continue
+
                 d[author_ja][title] = {
                     'author_ja': author_ja,
                     'author': author_en,

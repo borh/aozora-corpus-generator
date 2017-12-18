@@ -155,7 +155,11 @@ def tokenize(text, features, no_punc=True):
 
 
 def romanize(s):
-    return jaconv.kana2alphabet(jaconv.kata2hira(s.replace('・', '_').replace('ゔ', 'v')))
+    return re.sub(r'_+',
+                  '_',
+                  re.sub(r'[^a-zA-Z]',
+                         '_',
+                         jaconv.kana2alphabet(jaconv.kata2hira(s.replace('ゔ', 'v')))))
 
 
 def read_aozora_bunko_list(path, ndc_tr):

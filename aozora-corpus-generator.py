@@ -324,6 +324,11 @@ def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
         log.debug('Replacing JIS X {} with Unicode \'{}\''.format(menkuten, gaiji_tr[menkuten]))
 
     text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
+    try:
+        footer_idx = text.index('底本')
+        text = text[0:footer_idx - 1]
+    except ValueError:
+        pass
 
     paragraphs = [list(wakati(paragraph, no_punc)) for paragraph in text.splitlines()]
     token_count = sum(len(sentence)

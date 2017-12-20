@@ -337,7 +337,12 @@ def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
         body = body[0]
 
     # Remove ruby and notes:
-    for e in body.xpath(".//span[@class='notes'] | .//rp | .//rt"):
+    for e in body.xpath("""
+      .//span[@class='notes']
+    | .//rp
+    | .//rt
+    | .//sub
+    """):
         e.getparent().remove(e)
 
     # Convert gaiji img tags to Unicode characters:

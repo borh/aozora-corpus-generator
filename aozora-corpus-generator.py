@@ -243,23 +243,24 @@ def read_aozora_bunko_list(path, ndc_tr):
                 if title in d[author_ja]:
                     # Remove translations.
                     d[author_ja].pop(title, None)
-                    continue
-
-                d[author_ja][title] = {
-                    'author_ja': author_ja,
-                    'author': author_en,
-                    'author_year': f'{row["生年月日"]}--{row["没年月日"]}',
-                    'title_ja': title_ja,
-                    'title': title_en,
-                    'year': year,
-                    'ndc': ndc,
-                    'file_path': 'aozorabunko/cards/{}/{}'.format(id, file_path),
-                    'file_name': '{}_{}_{}'.format(  # TODO Do we need to shorthen these?
-                        row['姓ローマ字'],
-                        row['名ローマ字'][0:1],
-                        romanize(row['作品名読み'][0:5]).title()
-                    )
-                }
+                    if len(d[author_ja]) == 0:
+                        d.pop(author_ja, None)
+                else:
+                    d[author_ja][title] = {
+                        'author_ja': author_ja,
+                        'author': author_en,
+                        'author_year': f'{row["生年月日"]}--{row["没年月日"]}',
+                        'title_ja': title_ja,
+                        'title': title_en,
+                        'year': year,
+                        'ndc': ndc,
+                        'file_path': 'aozorabunko/cards/{}/{}'.format(id, file_path),
+                        'file_name': '{}_{}_{}'.format(  # TODO Do we need to shorthen these?
+                            row['姓ローマ字'],
+                            row['名ローマ字'][0:1],
+                            romanize(row['作品名読み'][0:5]).title()
+                        )
+                    }
     return d
 
 

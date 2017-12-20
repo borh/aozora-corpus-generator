@@ -25,8 +25,13 @@ def make_jis_unicode_map(file_path):
     '''
     Generates a translation dictionary between the men-ku-ten
     (i.e. '1-1-24') type of representation of characters in the JIS X
-    0213 standard and Unicode. This format is used to represent
-    so-called 'gaiji' within Aozora Bunko.
+    0213 standard and Unicode. This format is used to represent most
+    of the so-called 'gaiji' within Aozora Bunko, which refer to
+    characters on the 3rd and 4th planes of the JIS X 0213
+    standard. Note that this does not cover all 'gaiji' use, which
+    includes references to Unicode itself or to a decription of the
+    character as combination of two or more other chracters.
+    Reference: http://www.aozora.gr.jp/annotation/external_character.html
     '''
     d = {}
     hex_to_code = dict(zip([format(i, 'X') for i in range(33, 33+95)],

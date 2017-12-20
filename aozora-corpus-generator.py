@@ -297,11 +297,24 @@ def read_author_title_list(aozora_db, path):
     return corpus_files, db
 
 
+def remove_from(s, pattern):
+    rx = re.compile(pattern, re.M)
+    maybe_match = rx.search(s)
+    if maybe_match:
+        print('r ', s[maybe_match.start():])
+        return s[0:maybe_match.start()]
+    else:
+        return s
+
+
 def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
     '''
     Reads an Aozora Bunko XHTML/HTML file and converts it into plain
     text. All comments and ruby are removed, and gaiji are replaced
     with Unicode equivalents.
+    Reference:
+    -   http://www.aozora.gr.jp/annotation/
+    -   http://www.aozora.gr.jp/annotation/henkoten.html
     '''
     with open(path, 'rb') as f:
         doc = html.parse(f.read(), maybe_xhtml=False, fallback_encoding='shift_jis', return_root=False)
@@ -329,11 +342,7 @@ def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
         log.debug('Replacing JIS X {} with Unicode \'{}\''.format(menkuten, gaiji_tr[menkuten]))
 
     text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
-    try:
-        footer_idx = text.index('底本')
-        text = text[0:footer_idx - 1]
-    except ValueError:
-        pass
+    text = remove_from(text, r'^[　【]?(底本：|訳者あとがき|この翻訳は|この作品.*翻訳|この翻訳.*全訳)')
 
     paragraphs = [list(wakati(paragraph, no_punc)) for paragraph in text.splitlines()]
     token_count = sum(len(sentence)

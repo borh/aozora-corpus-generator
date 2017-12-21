@@ -418,21 +418,21 @@ def write_metadata_file(files, metadata, aozora_db, prefix):
         for (file_name, _), d in zip(files, metadata):
             try:
                 m = aozora_db[d['author']][d['title']]
-            	writer.writerow([file_name + '.txt',
-            	                 'ja',
-            	                 'Aozora Bunko',
-            	                 m['file_path'],
-            	                 m['author_ja'],
-            	                 m['title_ja'],
-            	                 m['author'],
-            	                 m['title'],
-            	                 m['author_year'],
-            	                 m['year'],
-            	                 m['token_count'],
-            	                 m['ndc'],
-            	                 d['genre'],
-            	                 d['comments'],
-            	                 d['brow']])
+                writer.writerow([file_name + '.txt',
+                                 'ja',
+                                 'Aozora Bunko',
+                                 m['file_path'],
+                                 m['author_ja'],
+                                 m['title_ja'],
+                                 m['author'],
+                                 m['title'],
+                                 m['author_year'],
+                                 m['year'],
+                                 m['token_count'],
+                                 m['ndc'],
+                                 d['genre'],
+                                 d['comments'],
+                                 d['brow']])
             except KeyError:
                 log.critical(f'Missing keys in $d')
         log.info('Wrote metadata to {}'.format(metadata_fn))

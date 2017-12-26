@@ -5,7 +5,7 @@ import pathlib
 import concurrent.futures
 import logging
 
-from lib.aozora import (
+from libs.aozora import (
     make_jis_unicode_map,
     make_ndc_map,
     read_aozora_bunko_list,

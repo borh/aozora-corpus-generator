@@ -128,11 +128,14 @@ if __name__ == '__main__':
     if args['parallel']:
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(convert_corpus_file,
-                                       file_name, file_path,
+                                       corpus, file_name, file_path,
                                        args['out'], gaiji_tr,
+                                       args['features'],
                                        args['no_punc'],
-                                       args['min_tokens'])
-                       for (file_name, file_path) in files]
+                                       args['min_tokens'],
+                                       args['features_opening_delim'],
+                                       args['features_closing_delim'])
+                       for (corpus, file_name, file_path) in files]
             for future in concurrent.futures.as_completed(futures):
                 try:
                     file_name, file_path, prefix, token_count, rejected = future.result()
@@ -145,8 +148,8 @@ if __name__ == '__main__':
                 except Exception:
                     log.error('Process {} failed: {}'.format(future, future.result()))
     else:
-        for file_name, file_path in files:
-            _, _, _, token_count, rejected = convert_corpus_file(file_name, file_path, args['out'], gaiji_tr, args['no_punc'], args['min_tokens'])
+        for corpus, file_name, file_path in files:
+            _, _, _, token_count, rejected = convert_corpus_file(corpus, file_name, file_path, args['out'], gaiji_tr, args['no_punc'], args['min_tokens'])
             token_counts[file_path] = token_count
             if rejected:
                 rejected_files.add(file_path)
@@ -154,17 +157,15 @@ if __name__ == '__main__':
             else:
                 log.info('{} => {}/{{ Tokenized, Plain }}/{}.txt'.format(file_path, args['out'], file_name))
 
-    rejected_indeces = {idx for idx, (_, file_path) in enumerate(files)
+    rejected_indeces = {idx for idx, (_, _, file_path) in enumerate(files)
                         if file_path in rejected_files}
 
     files = [file for idx, file in enumerate(files)
              if idx not in rejected_indeces]
-    for m, ts in aozora_db.items():
-        for _, t in ts.items():
-            try:
-                t['token_count'] = token_counts[t['file_path']]
-            except KeyError:
-                pass
+
+    for m in metadata:
+        m['token_count'] = token_counts[m['corpus_id']]
+
     metadata = [m for idx, m in enumerate(metadata)
                 if idx not in rejected_indeces]
 

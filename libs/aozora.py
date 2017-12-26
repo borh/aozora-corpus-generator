@@ -300,25 +300,35 @@ def read_author_title_list(
     with open(path, newline='') as f:
         r = csv.DictReader(f)
         for row in r:
-            try:
-                row['author'] = re.sub(r'\s', '', row['author'])
-                if row['title'] == '*':
-                    works = {title: (m['file_name'], m['file_path'])
-                             for title, m in aozora_db[row['author']].items()}
-                    corpus_files.extend(file_name_path
-                                        for file_name_path in works.values())
-                    db.extend({'author': row['author'],
-                               'title': title,
-                               'brow': row['brow'],
-                               'genre': '',
-                               'comments': ''}
-                              for title in works.keys())
-                else:
-                    match = aozora_db[row['author']][row['title']]
-                    corpus_files.append((match['file_name'], match['file_path']))
-                    db.append(row)
-            except KeyError:
-                log.warn('{} not in Aozora Bunko DB. Skipping...'.format(row))
+            if row['corpus'] == 'Aozora Bunko':
+                try:
+                    row['author'] = re.sub(r'\s', '', row['author'])
+                    if row['title'] == '*':
+                        works = {title: (m['file_name'], m['file_path'])
+                                 for title, m in aozora_db[row['author']].items()}
+                        corpus_files.extend((row['corpus'],) + file_name_path
+                                            for file_name_path in works.values())
+                        db.extend({'corpus': row['corpus'],
+                                   'corpus_id': works[title][1],
+                                   'author': row['author'],
+                                   'title': title,
+                                   'brow': '',
+                                   'genre': '',
+                                   'comments': ''}
+                                  for title in works.keys())
+                    else:
+                        match = aozora_db[row['author']][row['title']]
+                        corpus_files.append((row['corpus'], match['file_name'], match['file_path']))
+                        row['corpus_id'] = match['file_path']
+                        db.append(row)
+                except KeyError:
+                    log.warn('{} not in Aozora Bunko DB. Skipping...'.format(row))
+            else: # Corpus is not Aozora Bunko:
+                file_path = join(row['corpus'], row['filename'])
+                corpus_files.append((row['corpus'], splitext(row['filename'])[0], file_path))
+                row['corpus_id'] = file_path
+                db.append(row)
+
     return corpus_files, db
 
 
@@ -332,7 +342,7 @@ def remove_from(s, pattern):
         return s
 
 
-def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
+def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, opening_delim, closing_delim):
     '''
     Reads an Aozora Bunko XHTML/HTML file and converts it into plain
     text. All comments and ruby are removed, and gaiji are replaced
@@ -341,6 +351,7 @@ def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
     -   http://www.aozora.gr.jp/annotation/
     -   http://www.aozora.gr.jp/annotation/henkoten.html
     '''
+
     with open(path, 'rb') as f:
         doc = html.parse(f.read(), maybe_xhtml=False, fallback_encoding='shift_jis', return_root=False)
     body = doc.xpath(".//div[@class='main_text']")
@@ -395,16 +406,33 @@ def write_corpus_file(text, paragraphs, file_name, prefix):
                                              for sentence in paragraph))
 
 
-def convert_corpus_file(file_name, file_path, prefix, gaiji_tr, no_punc=True, min_tokens=False):
+def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
+                        features=['orth'], no_punc=True, min_tokens=False,
+                        opening_delim=None, closing_delim=None):
     '''
     Helper function that reads in html and writes a plain/tokenized
     version in one step. Needed for concurrent.futures.
     '''
-    try:
-        text, paragraphs, token_count = read_aozora_bunko_xml(file_path, gaiji_tr, no_punc)
-    except UnicodeDecodeError as e:
-        text, paragraphs, token_count = '', [], 0
-        log.warn(f'Decoding of {file_path} failed with {e}')
+    if corpus != 'Aozora Bunko':
+        with open(file_path) as f:
+            text = f.read()
+            paragraphs = [list(tokenize(paragraph, features, no_punc, opening_delim, closing_delim)) for paragraph in text.splitlines()]
+            token_count = sum(len(sentence)
+                              for paragraph in paragraphs
+                              for sentence in paragraph)
+    else:
+        try:
+            text, paragraphs, token_count = read_aozora_bunko_xml(
+                file_path,
+                gaiji_tr,
+                features,
+                no_punc,
+                opening_delim,
+                closing_delim,
+            )
+        except UnicodeDecodeError as e:
+            text, paragraphs, token_count = '', [], 0
+            log.warn(f'Decoding of {file_path} failed with {e}')
     reject = True if (min_tokens and token_count < min_tokens) else False
     if not reject:
         write_corpus_file(text, paragraphs, file_name, prefix)
@@ -439,24 +467,37 @@ def write_metadata_file(
                          'genre',
                          'comments',
                          'brow'])
-        for (file_name, _), d in zip(files, metadata):
-            try:
-                m = aozora_db[d['author']][d['title']]
-                writer.writerow([file_name + '.txt',
-                                 'ja',
-                                 'Aozora Bunko',
-                                 m['file_path'],
-                                 m['author_ja'],
-                                 m['title_ja'],
-                                 m['author'],
-                                 m['title'],
-                                 m['author_year'],
-                                 m['year'],
-                                 m['token_count'],
-                                 m['ndc'],
+        for (corpus, file_name, _), d in zip(files, metadata):
+            if corpus != 'Aozora Bunko':
+                writer.writerow([file_name, 'ja', corpus,
+                                 d['corpus_id'],
+                                 d['author_ja'],
+                                 d['title_ja'],
+                                 d['author'],
+                                 d['title'],
+                                 d['author_year'],
+                                 d['year'],
+                                 d['token_count'],
+                                 d['ndc'],
                                  d['genre'],
                                  d['comments'],
                                  d['brow']])
-            except KeyError:
-                log.critical(f'Missing keys in $d')
+            else:
+                try:
+                    m = aozora_db[d['author']][d['title']]
+                    writer.writerow([file_name + '.txt', 'ja', corpus,
+                                     d['corpus_id'],
+                                     m['author_ja'],
+                                     m['title_ja'],
+                                     m['author'],
+                                     m['title'],
+                                     m['author_year'],
+                                     m['year'],
+                                     d['token_count'],
+                                     m['ndc'],
+                                     d['genre'],
+                                     d['comments'],
+                                     d['brow']])
+                except KeyError:
+                    log.critical(f'Missing keys for {file_name} in "{d}"')
         log.info('Wrote metadata to {}'.format(metadata_fn))

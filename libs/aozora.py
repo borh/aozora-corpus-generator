@@ -150,18 +150,29 @@ def wakati(text, no_punc=True):
             yield [token['orth'] for token in sentence]
 
 
-def tokenize(text, features, no_punc=True):
+def tokenize(text, features, no_punc=True, opening_delim=None, closing_delim=None):
     '''
     Returns a sequence of sentences comprised of whitespace separated
     tokens. Supports encoding tokens with other POS or morphological
     annotations.
     '''
+    first_feature = features[0]
+    rest_features = features[1:]
+
+    if len(features) == 1:
+        opening_delim, closing_delim = '', ''
+    elif not opening_delim:
+        opening_delim, closing_delim = '/', ''
+
     for sentence in text_to_tokens(text):
-        yield ['/'.join(token[feature] for feature in features)
-               for token in sentence
-               if no_punc
-               or not re.match(r'^((補助)?記号|空白)', token['pos1'])
-               or not re.match(r'^数詞', token['pos2'])]
+        if no_punc:
+            yield [token[first_feature] + opening_delim + '/'.join(token[feature] for feature in rest_features) + closing_delim
+                   for token in sentence
+                   if not PUNC_RX.match(token['pos1']) and
+                   not (token['pos2'] == '数詞' and NUMBER_RX.match(token['orth']))]
+        else:
+            yield [token[first_feature] + opening_delim + '/'.join(token[feature] for feature in rest_features) + closing_delim
+                   for token in sentence]
 
 
 def romanize(s: str) -> str:
@@ -363,7 +374,7 @@ def read_aozora_bunko_xml(path, gaiji_tr, no_punc):
     text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
     text = remove_from(text, r'^[　【]?(底本：|訳者あとがき|この翻訳は|この作品.*翻訳|この翻訳.*全訳)')
 
-    paragraphs = [list(wakati(paragraph, no_punc)) for paragraph in text.splitlines()]
+    paragraphs = [list(tokenize(paragraph, features, no_punc, opening_delim, closing_delim)) for paragraph in text.splitlines()]
     token_count = sum(len(sentence)
                       for paragraph in paragraphs
                       for sentence in paragraph)

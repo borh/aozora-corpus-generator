@@ -30,6 +30,12 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
                         help='specify which features should be extracted from morphemes (default=\'orth\')',
                         default=['orth'],
                         required=False)
+    parser.add_argument('--features-opening-delim',
+                        help='specify opening char to use when outputting multiple features',
+                        required=False)
+    parser.add_argument('--features-closing-delim',
+                        help='specify closing char to use when outputting multiple features',
+                        required=False)
     parser.add_argument('--author-title-csv',
                         nargs='+',
                         help='one or more UTF-8 formatted CSV input file(s) (default=\'author-title.csv\')',

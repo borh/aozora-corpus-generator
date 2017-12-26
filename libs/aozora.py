@@ -15,6 +15,7 @@ from typing import (
 )
 
 from zipfile import ZipFile
+from os.path import join, splitext
 from io import TextIOWrapper
 import html5_parser as html
 from natto import MeCab

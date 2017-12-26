@@ -107,8 +107,9 @@ if __name__ == '__main__':
     if args['all']:
         for author_ja, titles in aozora_db.items():
             for title, title_dict in titles.items():
-                files.append((title_dict['file_name'], title_dict['file_path']))
+                files.append(('Aozora Bunko', title_dict['file_name'], title_dict['file_path']))
                 metadata.append({
+                    'corpus_id': title_dict['file_path'],
                     'author': title_dict['author'],
                     'title': title,
                     'brow': '',

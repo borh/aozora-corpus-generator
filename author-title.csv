@@ -1,53 +1,42 @@
-author,title,brow,genre,comments
-夢野 久作,ドグラ・マグラ,low,Detective,
-夢野 久作,少女地獄,low,Detective,Collection
-夢野 久作,押絵の奇蹟,low,Detective,
-夏目 漱石,草枕,high,Fiction,
-夏目 漱石,こころ,high,Fiction,
-夏目 漱石,三四郎,high,Fiction,
-夏目 漱石,坊っちゃん,high,Fiction,
-太宰 治,人間失格,high,Fiction,
-太宰 治,斜陽,high,Fiction,
-芥川 竜之介,偸盗,high,Fiction,
-芥川 竜之介,文芸的な、余りに文芸的な,high,文学評論,
-中島 敦,光と風と夢,high,Fiction,
-江戸川 乱歩,魔法博士,low,SF/Fantasy,
-江戸川 乱歩,少年探偵団,low,SF/Fantasy,
-江戸川 乱歩,宇宙怪人,low,SF/Fantasy,
-江戸川 乱歩,灰色の巨人,low,SF/Fantasy,
-海野 十三,浮かぶ飛行島,low,Young SF,
-海野 十三,怪塔王,low,Young SF,
-海野 十三,火星兵団,low,Young SF,
-海野 十三,地球要塞,low,Young SF,
-海野 十三,海野十三敗戦日記,low,Non-Fiction,
-島崎 藤村,家,high,Fiction,
-島崎 藤村,新生,high,Fiction,
-島崎 藤村,千曲川のスケッチ,high,写生文,
-島崎 藤村,破戒,high,自然主義文学,
-島崎 藤村,夜明け前,high,Famous Fiction,
-岡本 綺堂,半七捕物帳,low,Detective|岡っ引捕り物小説,
-岡本 綺堂,青蛙堂鬼談,low,Horror,怪奇
-岡本 綺堂,飛騨の怪談,low,Horror,怪奇
-岡本 綺堂,両国の秋,low,Horror,怪奇
-岡本 綺堂,玉藻の前,low,Horror,怪奇
-森 鴎外,ヰタ・セクスアリス,high,Fiction,
-森 鴎外,青年,low,Young Fiction,青春小説
-森 鴎外,伊沢蘭軒,high,史伝|History Non-Fiction,
-森 鴎外,大塩平八郎,low,History Non-Fiction,
-森 鴎外,渋江抽斎,low,History Non-Fiction,
-小栗 虫太郎,黒死館殺人事件,low,怪奇,
-小栗 虫太郎,白蟻,low,怪奇（完全犯罪）,
-小栗 虫太郎,潜航艇「鷹の城」,low,（二十世紀鉄仮面）,
-福沢 諭吉,学問のすすめ,high,Non-Fiction,
-福沢 諭吉,福翁自伝,high,Non-Fiction,Colloquial
-室生 犀星,蜜のあわれ,low,超現実主義的,
-石川 啄木,鳥影,low,Fiction,
-坂口 安吾,ジロリの女,low,Fiction,
-坂口 安吾,金銭無情,low,Experimental?,
-坂口 安吾,二流の人,low,Historical Fiction,
-坂口 安吾,復員殺人事件,low,Detective,
-坂口 安吾,不連続殺人事件,low,Detective,
-小林 多喜二,蟹工船,low,Fiction,
-小林 多喜二,工場細胞,low,Fiction,
-小林 多喜二,党生活者,low,Fiction,
-小林 多喜二,不在地主,low,Fiction,
+corpus,author,title,brow,genre,comments
+Aozora Bunko,夏目 漱石,草枕,high,Fiction,
+Aozora Bunko,夏目 漱石,こころ,high,Fiction,
+Aozora Bunko,夏目 漱石,三四郎,high,Fiction,
+Aozora Bunko,夏目 漱石,坊っちゃん,high,Fiction,
+Aozora Bunko,太宰 治,人間失格,high,Fiction,
+Aozora Bunko,太宰 治,斜陽,high,Fiction,
+Aozora Bunko,夢野 久作,ドグラ・マグラ,low,Detective,
+Aozora Bunko,夢野 久作,少女地獄,low,Detective,Collection
+Aozora Bunko,夢野 久作,押絵の奇蹟,low,Detective,
+Aozora Bunko,江戸川 乱歩,魔法博士,low,SF/Fantasy,
+Aozora Bunko,江戸川 乱歩,少年探偵団,low,SF/Fantasy,
+Aozora Bunko,江戸川 乱歩,宇宙怪人,low,SF/Fantasy,
+Aozora Bunko,江戸川 乱歩,灰色の巨人,low,SF/Fantasy,
+Aozora Bunko,海野 十三,浮かぶ飛行島,low,Young SF,
+Aozora Bunko,海野 十三,怪塔王,low,Young SF,
+Aozora Bunko,海野 十三,火星兵団,low,Young SF,
+Aozora Bunko,海野 十三,地球要塞,low,Young SF,
+Aozora Bunko,岡本 綺堂,半七捕物帳,low,Detective/Crime,岡っ引捕り物小説
+Aozora Bunko,岡本 綺堂,青蛙堂鬼談,low,Horror,怪奇
+Aozora Bunko,岡本 綺堂,飛騨の怪談,low,Horror,怪奇
+Aozora Bunko,岡本 綺堂,両国の秋,low,Horror,怪奇
+Aozora Bunko,岡本 綺堂,玉藻の前,low,Horror,怪奇
+Aozora Bunko,森 鴎外,ヰタ・セクスアリス,high,Fiction,
+Aozora Bunko,森 鴎外,青年,high,Young Fiction,青春小説
+Aozora Bunko,森 鴎外,渋江抽斎,high,History Non-Fiction,
+Aozora Bunko,小栗 虫太郎,黒死館殺人事件,low,Horror,怪奇
+Aozora Bunko,小栗 虫太郎,白蟻,low,Horror,怪奇（完全犯罪）
+Aozora Bunko,小栗 虫太郎,潜航艇「鷹の城」,low,Fiction,（二十世紀鉄仮面）
+Aozora Bunko,坂口 安吾,ジロリの女,low,Fiction,
+Aozora Bunko,坂口 安吾,復員殺人事件,low,Detective,
+Aozora Bunko,坂口 安吾,不連続殺人事件,low,Detective,
+Aozora Bunko,小林 多喜二,蟹工船,high,Fiction,
+Aozora Bunko,小林 多喜二,工場細胞,high,Fiction,
+Aozora Bunko,小林 多喜二,党生活者,high,Fiction,
+Aozora Bunko,小林 多喜二,不在地主,high,Fiction,
+Aozora Bunko,谷崎 潤一郎,鍵,high,Fiction,
+Aozora Bunko,谷崎 潤一郎,春琴抄,high,Fiction,
+Aozora Bunko,谷崎 潤一郎,少将滋幹の母,high,Fiction,
+Aozora Bunko,谷崎 潤一郎,痴人の愛,high,Fiction,
+Aozora Bunko,谷崎 潤一郎,卍,high,Fiction,
+Aozora Bunko,谷崎 潤一郎,盲目物語,high,Fiction,

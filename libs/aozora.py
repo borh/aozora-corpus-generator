@@ -200,7 +200,7 @@ def read_aozora_bunko_list(path: str, ndc_tr: Dict[str, str]) -> defaultdict:
                 # version, we skip the old one while keeping only
                 # old-style works.
                 if row['文字遣い種別'] != '新字新仮名':
-                    log.warn(f'Skipping of processing of old-syle kana work: {row}')
+                    log.warn(f'Skipping processing of old-syle kana work: {row}')
                     continue
 
                 # Use the lower value from 底本初版発行年1 and 初出:

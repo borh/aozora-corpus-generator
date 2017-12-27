@@ -69,17 +69,25 @@ python aozora-corpus-generator.py --help
 ```
 
     usage: aozora-corpus-generator.py [-h] [--features FEATURES [FEATURES ...]]
-                                      --author-title-csv AUTHOR_TITLE_CSV
-                                      [AUTHOR_TITLE_CSV ...]
+                                      [--features-opening-delim FEATURES_OPENING_DELIM]
+                                      [--features-closing-delim FEATURES_CLOSING_DELIM]
+                                      [--author-title-csv AUTHOR_TITLE_CSV [AUTHOR_TITLE_CSV ...]]
                                       [--aozora-bunko-repository AOZORA_BUNKO_REPOSITORY]
                                       --out OUT [--all] [--min-tokens MIN_TOKENS]
-                                      [--incremental] [--parallel] [--verbose]
+                                      [--no-punc] [--incremental] [--parallel]
+                                      [--verbose]
     aozora-corpus-generator extracts given author and book pairs from Aozora Bunko and formats them into (optionally tokenized) plain text files.
     optional arguments:
       -h, --help            show this help message and exit
       --features FEATURES [FEATURES ...]
                             specify which features should be extracted from
                             morphemes (default='orth')
+      --features-opening-delim FEATURES_OPENING_DELIM
+                            specify opening char to use when outputting multiple
+                            features
+      --features-closing-delim FEATURES_CLOSING_DELIM
+                            specify closing char to use when outputting multiple
+                            features
       --author-title-csv AUTHOR_TITLE_CSV [AUTHOR_TITLE_CSV ...]
                             one or more UTF-8 formatted CSV input file(s)
                             (default='author-title.csv')
@@ -93,6 +101,8 @@ python aozora-corpus-generator.py --help
       --min-tokens MIN_TOKENS
                             specify minimum token count to filter files by
                             (default=30000)
+      --no-punc             specify if punctuation should be discarded from
+                            tokenized version (default=False)
       --incremental         do not overwrite existing corpus files (default=False)
       --parallel            specify if processing should be done in parallel
                             (default=True)

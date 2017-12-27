@@ -112,11 +112,15 @@ def split_sentence_ja(s):
 def text_to_tokens(text):
     '''
     Returns a sequence of sentences, each comprising a sequence of
-    tokens. Must be subsumed into non-lazy collection.
+    tokens. Must be subsumed into non-lazy collection. Assumes the CWJ
+    UniDic 2.2.0 version of the dictionary is set as default.
     '''
-    unidic_features = ['pos1', 'pos2', 'pos3', 'pos4', 'cType',
-                       'cForm', 'lForm', 'lemma', 'orth', 'pron', 'orthBase',
-                       'pronBase', 'goshu', 'iType', 'iForm', 'fType', 'fForm']
+    unidic_features = [
+        'pos1', 'pos2', 'pos3', 'pos4', 'cType', 'cForm', 'lForm', 'lemma',
+        'orth', 'pron', 'orthBase', 'pronBase', 'goshu', 'iType', 'iForm',
+        'fType', 'fForm', 'iConType', 'fConType', 'type', 'kana', 'kanaBase',
+        'form', 'formBase', 'aType', 'aConType', 'aModType', 'lid', 'lemma_id'
+    ]
 
     with MeCab() as mecab:
         for sentence in split_sentence_ja(text):

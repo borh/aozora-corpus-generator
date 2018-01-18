@@ -109,6 +109,59 @@ def split_sentence_ja(s):
                                       s).splitlines()]
 
 
+KATAKANA = set(list('ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソ'
+                    'ゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペ'
+                    'ホボポマミムメモャヤュユョヨラリルレロワヲンーヮヰヱヵヶヴ'))
+
+HIRAGANA = set(list('ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすず'
+                    'せぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴ'
+                    'ふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろわ'
+                    'をんーゎゐゑゕゖゔ'))
+
+
+def is_katakana_sentence(text):
+    '''Identify if sentence is made up of katakana (ie. no hiragana)
+    characters. In such a case, it should be converted to hiragana,
+    processed, and then the orth should be substituted back in.'''
+    if len(text) < 5:
+        return False
+
+    cmap = {
+        'katakana': 0,
+        'hiragana': 0,
+        'other': 0,
+    }
+
+    unigram_types = defaultdict(int)
+    bigram_types = defaultdict(int)
+
+    for c in text:
+        unigram_types[c] += 1
+        if c in KATAKANA:
+            cmap['katakana'] += 1
+        elif c in HIRAGANA:
+            cmap['hiragana'] += 1
+        else:
+            cmap['other'] += 1
+
+    for bigram in map(lambda a, b: '{}{}'.format(a, b), text, text[1:]):
+        bigram_types[bigram] += 1
+
+    katakana_ratio = cmap['katakana'] / sum(cmap.values())
+
+    if cmap['hiragana'] == 0 and katakana_ratio > 0.5:
+        if len(text) < 8 or \
+           (len(text) < 10 and re.search(r'ッ?.?[？！]」$', text[-3:])) or \
+           (len(text) < 100 and len(unigram_types) / len(text) < 0.5) or \
+           max(bigram_types.values()) / len(text) > 0.5 or \
+           len(re.findall(r'(.)\1+', text)) / len(text) > 0.1 or \
+           len(re.findall(r'(..)ッ?\1', text)) / len(text) > 0.1:
+            return False
+        return True
+    else:
+        return False
+
+
 def text_to_tokens(text):
     '''
     Returns a sequence of sentences, each comprising a sequence of
@@ -125,15 +178,28 @@ def text_to_tokens(text):
     with MeCab() as mecab:
         for sentence in split_sentence_ja(text):
             tokens = []
+
+            is_katakana = is_katakana_sentence(text)
+            if is_katakana:
+                text = jaconv.kata2hira(text)
+
             for node in mecab.parse(sentence, as_nodes=True):
                 if not node.is_eos():
                     token = dict(zip(unidic_features, node.feature.split(',')))
+
+
+
                     if len(token) == 6:  # UNK
-                        token['orth'] = node.surface
+                        if is_katakana:
+                            token['orth'] = jaconv.hira2kata(node.surface)
+                        else:
+                            token['orth'] = node.surface
                         token['orthBase'] = node.surface
                         token['lemma'] = node.surface
                         tokens.append(token)
                     else:
+                        if is_katakana:
+                            token['orth'] = jaconv.hira2kata(token['orth'])
                         tokens.append(token)
             yield tokens
 

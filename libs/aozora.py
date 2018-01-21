@@ -106,7 +106,8 @@ def split_sentence_ja(s):
     closing_quotations = r'[\)）」』】］〕〉》\]]'
     return [s.strip() for s in re.sub(r'({}+)(?!{})'.format(delimiters, closing_quotations),
                                       r'\1\n',
-                                      s).splitlines()]
+                                      s).splitlines()
+            if s.strip()]
 
 
 KATAKANA = set(list('ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソ'

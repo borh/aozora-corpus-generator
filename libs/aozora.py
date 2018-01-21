@@ -120,12 +120,16 @@ HIRAGANA = set(list('ぁあぃいぅうぇえぉおかがきぎくぐけげこ�
                     'をんーゎゐゑゕゖゔ'))
 
 
-def is_katakana_sentence(text):
-    '''Identify if sentence is made up of katakana (ie. no hiragana)
+def is_katakana_sentence(text, tokens):
+    '''
+    Identify if sentence is made up of katakana (ie. no hiragana)
     characters. In such a case, it should be converted to hiragana,
-    processed, and then the orth should be substituted back in.'''
-    if len(text) < 5:
-        return False
+    processed, and then the original orth should be substituted back
+    in.
+
+    Note: This identification is an imperfect heuristic and should
+    be replaced.
+    '''
 
     cmap = {
         'katakana': 0,
@@ -151,7 +155,16 @@ def is_katakana_sentence(text):
     katakana_ratio = cmap['katakana'] / sum(cmap.values())
 
     if cmap['hiragana'] == 0 and katakana_ratio > 0.5:
-        if len(text) < 8 or \
+
+        oov_count = sum(1 for token in tokens if token['oov'])
+        proper_noun_chars = sum(len(token['orth']) for token in tokens
+                                if token['pos2'] == '固有名詞')
+
+        if oov_count == 0 and proper_noun_chars / len(text) > 0.3:
+            return False
+
+        if oov_count / len(tokens) > 0.2 or \
+           len(text) < 8 or \
            (len(text) < 10 and re.search(r'ッ?.?[？！]」$', text[-3:])) or \
            (len(text) < 100 and len(unigram_types) / len(text) < 0.5) or \
            max(bigram_types.values()) / len(text) > 0.5 or \
@@ -163,11 +176,13 @@ def is_katakana_sentence(text):
         return False
 
 
-def text_to_tokens(text):
+def sentence_to_tokens(sentence, is_katakana=False):
     '''
-    Returns a sequence of sentences, each comprising a sequence of
-    tokens. Must be subsumed into non-lazy collection. Assumes the CWJ
-    UniDic 2.2.0 version of the dictionary is set as default.
+    Parses one sentence into tokens using MeCab. Assumes UniDic CWJ
+    2.2.0 version of the dictionary is set as default. If is_katakana
+    is set, then will convert hiragana to katakana before passing the
+    string to MeCab and then finally reverting the change to the
+    surface form.
     '''
     unidic_features = [
         'pos1', 'pos2', 'pos3', 'pos4', 'cType', 'cForm', 'lForm', 'lemma',
@@ -175,34 +190,49 @@ def text_to_tokens(text):
         'fType', 'fForm', 'iConType', 'fConType', 'type', 'kana', 'kanaBase',
         'form', 'formBase', 'aType', 'aConType', 'aModType', 'lid', 'lemma_id'
     ]
+    tokens = []
+
+    if is_katakana:
+        sentence = jaconv.kata2hira(sentence)
 
     with MeCab() as mecab:
-        for sentence in split_sentence_ja(text):
-            tokens = []
-
-            is_katakana = is_katakana_sentence(text)
-            if is_katakana:
-                text = jaconv.kata2hira(text)
-
-            for node in mecab.parse(sentence, as_nodes=True):
-                if not node.is_eos():
-                    token = dict(zip(unidic_features, node.feature.split(',')))
-
-
-
-                    if len(token) == 6:  # UNK
-                        if is_katakana:
-                            token['orth'] = jaconv.hira2kata(node.surface)
-                        else:
-                            token['orth'] = node.surface
-                        token['orthBase'] = node.surface
-                        token['lemma'] = node.surface
-                        tokens.append(token)
+        for node in mecab.parse(sentence, as_nodes=True):
+            if not node.is_eos():
+                token = dict(zip(unidic_features, node.feature.split(',')))
+                if len(token) == 6:  # OOV
+                    if is_katakana:
+                        token['orth'] = jaconv.hira2kata(node.surface)
                     else:
-                        if is_katakana:
-                            token['orth'] = jaconv.hira2kata(token['orth'])
-                        tokens.append(token)
-            yield tokens
+                        token['orth'] = node.surface
+                    token['orthBase'] = node.surface
+                    token['lemma'] = node.surface
+                    token['oov'] = True
+                    tokens.append(token)
+                else:
+                    if is_katakana:
+                        token['orth'] = jaconv.hira2kata(token['orth'])
+                    token['oov'] = False
+                    tokens.append(token)
+    return tokens
+
+
+def text_to_tokens(text):
+    '''
+    Returns a sequence of sentences, each comprising a sequence of
+    tokens. Must be subsumed into non-lazy collection.  Will re-parse
+    the sentence if it detects it as written in kanji-katakana-majiri
+    form.
+    '''
+    for sentence in split_sentence_ja(text):
+        tokens = sentence_to_tokens(sentence)
+        if len(tokens) == 0:
+            continue
+
+        is_katakana = is_katakana_sentence(sentence, tokens)
+        if is_katakana:
+            tokens = sentence_to_tokens(sentence, is_katakana)
+
+        yield tokens
 
 
 PUNC_RX = re.compile(r'^((補助)?記号|空白)$')

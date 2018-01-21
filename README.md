@@ -109,3 +109,8 @@ python aozora-corpus-generator.py --help
       --verbose             turns on verbose logging (default=False)
     Example usage:
     python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+
+# Issues
+
+-   "Gaiji" characters with provided JIS X 0213 codepoints are converted to their equivalent Unicode codepoint. Aozora Bunko is conservative in encoding rare Kanji, and, therefore, uses images (html version) or textual descriptions (plaintext version).
+-   Words are sometimes emphasized in Japanese text with dots above characters, while Aozora Bunko uses bold text in their place. Emphasis tags are currently stripped.

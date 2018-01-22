@@ -476,7 +476,15 @@ def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, opening_delim, clos
     | .//rt
     | .//sub
     """):
-        e.getparent().remove(e)
+        parent = e.getparent()
+        assert parent is not None
+        if e.tail:
+            previous = e.getprevious()
+            if previous is None:
+                parent.text = (parent.text or '') + e.tail
+            else:
+                previous.tail = (previous.tail or '') + e.tail
+        parent.remove(e)
 
     # Convert gaiji img tags to Unicode characters:
     for gaiji_el in body.xpath(".//img[@class='gaiji']"):

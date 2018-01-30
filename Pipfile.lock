@@ -9,9 +9,9 @@
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "4.14.13-1-ARCH",
+            "platform_release": "4.14.15-1-ARCH",
             "platform_system": "Linux",
-            "platform_version": "#1 SMP PREEMPT Wed Jan 10 11:14:50 UTC 2018",
+            "platform_version": "#1 SMP PREEMPT Tue Jan 23 21:49:25 UTC 2018",
             "python_full_version": "3.6.4",
             "python_version": "3.6",
             "sys_platform": "linux"
@@ -74,9 +74,9 @@
         },
         "jaconv": {
             "hashes": [
-                "sha256:f3d213430f56677eaf59a34945b3e5ec8007febbfd50f910a36a8d9be9aff7e2"
+                "sha256:29348297c3847ee9b30e6f28a9a1fdcf7ff4e2e3e0aee9ff03a925bd4f18f967"
             ],
-            "version": "==0.2.1"
+            "version": "==0.2.2"
         },
         "lxml": {
             "hashes": [

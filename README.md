@@ -22,7 +22,7 @@ You must install [MeCab](https://github.com/taku910/mecab) and [UniDic](https://
 On Debian-based distros, the command below should suffice:
 
 ```bash
-sudo apt get install -y mecab libmecab-dev unidic-mecab
+sudo apt install -y mecab libmecab-dev unidic-mecab
 ```
 
 MacOS users can install the native dependencies with:

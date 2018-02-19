@@ -416,6 +416,7 @@ def read_author_title_list(
                                    'title': title,
                                    'brow': '',
                                    'genre': '',
+                                   'narrative_perspective': '',
                                    'comments': ''}
                                   for title in works.keys())
                     else:
@@ -575,6 +576,7 @@ def write_metadata_file(
                          'token_count',
                          'ndc',
                          'genre',
+                         'narrative_perspective',
                          'comments',
                          'brow'])
         for (corpus, file_name, _), d in zip(files, metadata):
@@ -590,6 +592,7 @@ def write_metadata_file(
                                  d['token_count'],
                                  d['ndc'],
                                  d['genre'],
+                                 d['narrative_perspective'],
                                  d['comments'],
                                  d['brow']])
             else:
@@ -606,6 +609,7 @@ def write_metadata_file(
                                      d['token_count'],
                                      m['ndc'],
                                      d['genre'],
+                                     d['narrative_perspective'],
                                      d['comments'],
                                      d['brow']])
                 except KeyError:

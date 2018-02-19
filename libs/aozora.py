@@ -252,7 +252,7 @@ def wakati(text, no_punc=True):
             yield [token['orth'] for token in sentence]
 
 
-def tokenize(text, features, no_punc=True, opening_delim=None, closing_delim=None):
+def tokenize(text, features, no_punc=True, features_separator=None, opening_delim=None, closing_delim=None):
     '''
     Returns a sequence of sentences comprised of whitespace separated
     tokens. Supports encoding tokens with other POS or morphological
@@ -445,7 +445,8 @@ def remove_from(s, pattern):
         return s
 
 
-def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, opening_delim, closing_delim):
+def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc,
+                          features_separator, opening_delim, closing_delim):
     '''
     Reads an Aozora Bunko XHTML/HTML file and converts it into plain
     text. All comments and ruby are removed, and gaiji are replaced
@@ -499,6 +500,7 @@ def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, opening_delim, clos
     paragraphs = [list(tokenize(paragraph,
                                 features,
                                 no_punc=no_punc,
+                                features_separator=features_separator,
                                 opening_delim=opening_delim,
                                 closing_delim=closing_delim))
                   for paragraph in text.splitlines()]
@@ -524,7 +526,7 @@ def write_corpus_file(text, paragraphs, file_name, prefix):
 
 def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
                         features=['orth'], no_punc=True, min_tokens=False,
-                        opening_delim=None, closing_delim=None):
+                        features_separator=None, opening_delim=None, closing_delim=None):
     '''
     Helper function that reads in html and writes a plain/tokenized
     version in one step. Needed for concurrent.futures.
@@ -535,6 +537,7 @@ def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
             paragraphs = [list(tokenize(paragraph,
                                         features,
                                         no_punc=no_punc,
+                                        features_separator=features_separator,
                                         opening_delim=opening_delim,
                                         closing_delim=closing_delim))
                           for paragraph in text.splitlines()]
@@ -548,6 +551,7 @@ def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
                 gaiji_tr,
                 features,
                 no_punc,
+                features_separator,
                 opening_delim,
                 closing_delim,
             )

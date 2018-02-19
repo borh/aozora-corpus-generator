@@ -439,7 +439,7 @@ def remove_from(s, pattern):
     rx = re.compile(pattern, re.M)
     maybe_match = rx.search(s)
     if maybe_match:
-        print('r ', s[maybe_match.start():])
+        log.warn('Removing: {}'.format(s[maybe_match.start():]))
         return s[0:maybe_match.start()]
     else:
         return s

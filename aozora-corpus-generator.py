@@ -36,6 +36,9 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
     parser.add_argument('--features-closing-delim',
                         help='specify closing char to use when outputting multiple features',
                         required=False)
+    parser.add_argument('--features-separator',
+                        help='specify separating char to use when outputting multiple features',
+                        required=False)
     parser.add_argument('--author-title-csv',
                         nargs='+',
                         help='one or more UTF-8 formatted CSV input file(s) (default=\'author-title.csv\')',
@@ -134,6 +137,7 @@ if __name__ == '__main__':
                                        args['features'],
                                        args['no_punc'],
                                        args['min_tokens'],
+                                       args['features_separator'],
                                        args['features_opening_delim'],
                                        args['features_closing_delim'])
                        for (corpus, file_name, file_path) in files]
@@ -150,7 +154,18 @@ if __name__ == '__main__':
                     log.error('Process {} failed: {}'.format(future, future.result()))
     else:
         for corpus, file_name, file_path in files:
-            _, _, _, token_count, rejected = convert_corpus_file(corpus, file_name, file_path, args['out'], gaiji_tr, args['no_punc'], args['min_tokens'])
+            _, _, _, token_count, rejected = convert_corpus_file(
+                corpus,
+                file_name,
+                file_path,
+                args['out'],
+                gaiji_tr,
+                args['no_punc'],
+                args['min_tokens'],
+                args['features_separator'],
+                args['features_opening_delim'],
+                args['features_closing_delim']
+            )
             token_counts[file_path] = token_count
             if rejected:
                 rejected_files.add(file_path)

@@ -496,7 +496,12 @@ def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, opening_delim, clos
     text = re.sub(r'[\r\n]+', '\n', ''.join(body.itertext()).strip(), flags=re.MULTILINE)
     text = remove_from(text, r'^[　【]?(底本：|訳者あとがき|この翻訳は|この作品.*翻訳|この翻訳.*全訳)')
 
-    paragraphs = [list(tokenize(paragraph, features, no_punc, opening_delim, closing_delim)) for paragraph in text.splitlines()]
+    paragraphs = [list(tokenize(paragraph,
+                                features,
+                                no_punc=no_punc,
+                                opening_delim=opening_delim,
+                                closing_delim=closing_delim))
+                  for paragraph in text.splitlines()]
     token_count = sum(len(sentence)
                       for paragraph in paragraphs
                       for sentence in paragraph)
@@ -527,7 +532,12 @@ def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
     if corpus != 'Aozora Bunko':
         with open(file_path) as f:
             text = f.read()
-            paragraphs = [list(tokenize(paragraph, features, no_punc, opening_delim, closing_delim)) for paragraph in text.splitlines()]
+            paragraphs = [list(tokenize(paragraph,
+                                        features,
+                                        no_punc=no_punc,
+                                        opening_delim=opening_delim,
+                                        closing_delim=closing_delim))
+                          for paragraph in text.splitlines()]
             token_count = sum(len(sentence)
                               for paragraph in paragraphs
                               for sentence in paragraph)

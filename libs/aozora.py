@@ -261,19 +261,37 @@ def tokenize(text, features, no_punc=True, features_separator=None, opening_deli
     first_feature = features[0]
     rest_features = features[1:]
 
+    # Transform tab to real tab to deal with terminal passthrough issue.
+    if opening_delim == 'tab':
+        opening_delim = "\t"
+
     if len(features) == 1:
         opening_delim, closing_delim = '', ''
-    elif not opening_delim:
-        opening_delim, closing_delim = '/', ''
+    else:
+        if not opening_delim:
+            opening_delim, closing_delim = '/', ''
+        if not closing_delim:
+            closing_delim = ''
+
+    if not features_separator:
+        features_separator = ','
 
     for sentence in text_to_tokens(text):
         if no_punc:
-            yield [token[first_feature] + opening_delim + '/'.join(token[feature] for feature in rest_features) + closing_delim
+            yield [str(token[first_feature] +
+                       opening_delim +
+                       features_separator.join(token[feature] for feature in rest_features) +
+                       closing_delim).replace('\n', '')
+
                    for token in sentence
                    if not PUNC_RX.match(token['pos1']) and
                    not (token['pos2'] == '数詞' and NUMBER_RX.match(token['orth']))]
         else:
-            yield [token[first_feature] + opening_delim + '/'.join(token[feature] for feature in rest_features) + closing_delim
+            yield [str(token[first_feature] +
+                       opening_delim +
+                       features_separator.join(token[feature] for feature in rest_features) +
+                       closing_delim).replace('\n', '')
+
                    for token in sentence]
 
 

@@ -595,7 +595,8 @@ def write_metadata_file(
     metadata_fn = '{}/groups.csv'.format(prefix)
     with open(metadata_fn, 'w', newline='') as f:
         writer = csv.writer(f, delimiter='\t')
-        writer.writerow(['textid',
+        writer.writerow(['filename',
+                         'brow',
                          'language',
                          'corpus',
                          'corpus_id',
@@ -609,11 +610,13 @@ def write_metadata_file(
                          'ndc',
                          'genre',
                          'narrative_perspective',
-                         'comments',
-                         'brow'])
+                         'comments'])
         for (corpus, file_name, _), d in zip(files, metadata):
             if corpus != 'Aozora Bunko':
-                writer.writerow([file_name, 'ja', corpus,
+                writer.writerow([file_name,
+                                 d['brow'],
+                                 'ja',
+                                 corpus,
                                  d['corpus_id'],
                                  d['author_ja'],
                                  d['title_ja'],
@@ -625,12 +628,14 @@ def write_metadata_file(
                                  d['ndc'],
                                  d['genre'],
                                  d['narrative_perspective'],
-                                 d['comments'],
-                                 d['brow']])
+                                 d['comments']])
             else:
                 try:
                     m = aozora_db[d['author']][d['title']]
-                    writer.writerow([file_name + '.txt', 'ja', corpus,
+                    writer.writerow([file_name + '.txt',
+                                     d['brow'],
+                                     'ja',
+                                     corpus,
                                      d['corpus_id'],
                                      m['author_ja'],
                                      m['title_ja'],
@@ -642,8 +647,7 @@ def write_metadata_file(
                                      m['ndc'],
                                      d['genre'],
                                      d['narrative_perspective'],
-                                     d['comments'],
-                                     d['brow']])
+                                     d['comments']])
                 except KeyError:
                     log.critical(f'Missing keys for {file_name} in "{d}"')
         log.info('Wrote metadata to {}'.format(metadata_fn))

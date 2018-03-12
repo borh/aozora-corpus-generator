@@ -67,6 +67,11 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
                         action='store_true',
                         default=False,
                         required=False)
+    parser.add_argument('--remove-speech',
+                        help='specify if direct speech should be discarded from tokenized version (default=False)',
+                        action='store_true',
+                        default=False,
+                        required=False)
     parser.add_argument('--incremental', # TODO
                         help='do not overwrite existing corpus files (default=False)',
                         action='store_true',
@@ -136,6 +141,7 @@ if __name__ == '__main__':
                                        args['out'], gaiji_tr,
                                        args['features'],
                                        args['no_punc'],
+                                       args['remove_speech'],
                                        args['min_tokens'],
                                        args['features_separator'],
                                        args['features_opening_delim'],
@@ -160,7 +166,9 @@ if __name__ == '__main__':
                 file_path,
                 args['out'],
                 gaiji_tr,
+                args['features'],
                 args['no_punc'],
+                args['remove_speech'],
                 args['min_tokens'],
                 args['features_separator'],
                 args['features_opening_delim'],

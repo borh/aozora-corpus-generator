@@ -636,7 +636,7 @@ def write_metadata_file(
                          'comments'])
         for (corpus, file_name, _), d in zip(files, metadata):
             if corpus != 'Aozora Bunko':
-                writer.writerow([file_name,
+                writer.writerow([file_name + '.txt',
                                  d['brow'],
                                  'ja',
                                  corpus,

@@ -331,7 +331,7 @@ def read_aozora_bunko_list(path: str, ndc_tr: Dict[str, str]) -> defaultdict:
     more metadata.
     '''
     d = defaultdict(dict)
-    url_rx = re.compile(r'http://www\.aozora\.gr\.jp/cards/(\d+)/(.+)')
+    url_rx = re.compile(r'https://www\.aozora\.gr\.jp/cards/(\d+)/(.+)')
     with ZipFile(path) as z:
         with z.open('list_person_all_extended_utf8.csv', 'r') as f:
             for row in csv.DictReader(TextIOWrapper(f)):

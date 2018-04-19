@@ -381,7 +381,7 @@ def read_aozora_bunko_list(path: str, ndc_tr: Dict[str, str]) -> defaultdict:
                     file_path = match.group(2)
                 except AttributeError:
                     log.debug('Missing XHTML/HTML file for record {}, skipping...'.format(row))
-                    pass
+                    continue
 
                 ndc = row['分類番号'].replace('NDC ', '').replace('K', '')
 

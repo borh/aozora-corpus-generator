@@ -297,23 +297,26 @@ def tokenize(text, features, no_punc=True, remove_speech=False,
         features_separator = ','
 
     for sentence in text_to_tokens(text, remove_speech):
+        tokens = []
         if no_punc:
-            yield [str(token[first_feature] +
-                       opening_delim +
-                       features_separator.join(token[feature] for feature in rest_features) +
-                       closing_delim).replace('\n', '')
+            tokens = [str(token[first_feature] +
+                          opening_delim +
+                          features_separator.join(token[feature] for feature in rest_features) +
+                          closing_delim).replace('\n', '')
 
-                   for token in sentence
-                   if not PUNC_RX.match(token['pos1']) and
-                   not (token['pos2'] == '数詞' and NUMBER_RX.match(token['orth']))]
+                      for token in sentence
+                      if not PUNC_RX.match(token['pos1']) and
+                      not (token['pos2'] == '数詞' and NUMBER_RX.match(token['orth']))]
         else:
-            yield [str(token[first_feature] +
-                       opening_delim +
-                       features_separator.join(token[feature] for feature in rest_features) +
-                       closing_delim).replace('\n', '')
+            tokens = [str(token[first_feature] +
+                          opening_delim +
+                          features_separator.join(token[feature] for feature in rest_features) +
+                          closing_delim).replace('\n', '')
 
-                   for token in sentence]
+                      for token in sentence]
 
+        if tokens:
+            yield tokens
 
 def romanize(s: str) -> str:
     return re.sub(r'_+',

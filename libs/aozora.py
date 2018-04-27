@@ -417,7 +417,7 @@ def read_aozora_bunko_list(path: str, ndc_tr: Dict[str, str]) -> defaultdict:
                         'file_name': '{}_{}_{}'.format(  # TODO Do we need to shorthen these?
                             row['姓ローマ字'],
                             row['名ローマ字'][0:1],
-                            romanize(row['作品名読み'][0:5]).title()
+                            romanize(row['作品名読み'][0:7]).title()
                         )
                     }
     return d

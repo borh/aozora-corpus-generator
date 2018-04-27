@@ -5,14 +5,14 @@
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
-            "implementation_version": "3.6.4",
+            "implementation_version": "3.6.5",
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "4.15.12-1-hardened",
+            "platform_release": "4.16.5-1-hardened",
             "platform_system": "Linux",
-            "platform_version": "#1 SMP PREEMPT Thu Mar 22 02:53:45 CET 2018",
-            "python_full_version": "3.6.4",
+            "platform_version": "#1 SMP PREEMPT Thu Apr 26 21:26:37 CEST 2018",
+            "python_full_version": "3.6.5",
             "python_version": "3.6",
             "sys_platform": "linux"
         },
@@ -68,9 +68,9 @@
         },
         "html5-parser": {
             "hashes": [
-                "sha256:b9f3a1d4cdb8742e8e4ecafab04bff541bde4ff09af233293ed0b94028ec1ab5"
+                "sha256:a903ef8b93b51788a6d1604b3833303e9f2f8db488306ee4241436d2f518bd06"
             ],
-            "version": "==0.4.4"
+            "version": "==0.4.5"
         },
         "jaconv": {
             "hashes": [

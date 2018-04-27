@@ -1,42 +1,42 @@
 corpus,author,title,brow,genre,narrative_perspective,comments
-Aozora Bunko,夏目 漱石,草枕,high,Fiction,autodiegetic,
-Aozora Bunko,夏目 漱石,こころ,high,Fiction,homodiegetic,
-Aozora Bunko,夏目 漱石,三四郎,high,Fiction,homodiegetic,
-Aozora Bunko,夏目 漱石,坊っちゃん,high,Fiction,autodiegetic,
-Aozora Bunko,太宰 治,人間失格,high,Fiction,autodiegetic,
-Aozora Bunko,太宰 治,斜陽,high,Fiction,autodiegetic,
-Aozora Bunko,夢野 久作,ドグラ・マグラ,low,Detective,autodiegetic,
-Aozora Bunko,夢野 久作,少女地獄,low,Detective,homodiegetic,Collection
-Aozora Bunko,夢野 久作,押絵の奇蹟,low,Detective,autodiegetic,
-Aozora Bunko,江戸川 乱歩,魔法博士,low,Detective,heterodiegetic,
-Aozora Bunko,江戸川 乱歩,少年探偵団,low,Detective,heterodiegetic,
-Aozora Bunko,江戸川 乱歩,宇宙怪人,low,Detective,heterodiegetic,
-Aozora Bunko,江戸川 乱歩,灰色の巨人,low,Detective,heterodiegetic,
+Aozora Bunko,夏目 漱石,草枕,high,fiction,autodiegetic,
+Aozora Bunko,夏目 漱石,こころ,high,fiction,homodiegetic,
+Aozora Bunko,夏目 漱石,三四郎,high,fiction,homodiegetic,
+Aozora Bunko,夏目 漱石,坊っちゃん,high,fiction,autodiegetic,
+Aozora Bunko,太宰 治,人間失格,high,fiction,autodiegetic,
+Aozora Bunko,太宰 治,斜陽,high,fiction,autodiegetic,
+Aozora Bunko,夢野 久作,ドグラ・マグラ,low,detective,autodiegetic,
+Aozora Bunko,夢野 久作,少女地獄,low,detective,homodiegetic,Collection
+Aozora Bunko,夢野 久作,押絵の奇蹟,low,detective,autodiegetic,
+Aozora Bunko,江戸川 乱歩,魔法博士,low,detective,heterodiegetic,
+Aozora Bunko,江戸川 乱歩,少年探偵団,low,detective,heterodiegetic,
+Aozora Bunko,江戸川 乱歩,宇宙怪人,low,detective,heterodiegetic,
+Aozora Bunko,江戸川 乱歩,灰色の巨人,low,detective,heterodiegetic,
 Aozora Bunko,海野 十三,浮かぶ飛行島,low,SF,heterodiegetic,Young SF
 Aozora Bunko,海野 十三,怪塔王,low,SF,heterodiegetic,Young SF
 Aozora Bunko,海野 十三,火星兵団,low,SF,homodiegetic,Young SF
 Aozora Bunko,海野 十三,地球要塞,low,SF,autodiegetic,
-Aozora Bunko,岡本 綺堂,半七捕物帳,low,Detective,heterodiegetic,岡っ引捕り物小説
-Aozora Bunko,岡本 綺堂,青蛙堂鬼談,low,Horror,homodiegetic,怪奇
-Aozora Bunko,岡本 綺堂,飛騨の怪談,low,Horror,homodiegetic,怪奇
-Aozora Bunko,岡本 綺堂,両国の秋,low,Horror,homodiegetic,怪奇
-Aozora Bunko,岡本 綺堂,玉藻の前,low,Horror,homodiegetic,怪奇
-Aozora Bunko,森 鴎外,ヰタ・セクスアリス,high,Fiction,autodiegetic,
-Aozora Bunko,森 鴎外,青年,high,Young Fiction,homodiegetic,青春小説
-Aozora Bunko,森 鴎外,渋江抽斎,high,History Non-Fiction,homodiegetic,
-Aozora Bunko,小栗 虫太郎,黒死館殺人事件,low,Horror,homodiegetic,怪奇
-Aozora Bunko,小栗 虫太郎,白蟻,low,Horror,heterodiegetic,怪奇（完全犯罪）
-Aozora Bunko,小栗 虫太郎,潜航艇「鷹の城」,low,Detective,heterodiegetic,二十世紀鉄仮面
-Aozora Bunko,坂口 安吾,ジロリの女,low,Fiction,autodiegetic,Possibly High
-Aozora Bunko,坂口 安吾,復員殺人事件,low,Detective,autodiegetic,
-Aozora Bunko,坂口 安吾,不連続殺人事件,low,Detective,autodiegetic,
-Aozora Bunko,小林 多喜二,蟹工船,high,Fiction,heterodiegetic,
-Aozora Bunko,小林 多喜二,工場細胞,high,Fiction,heterodiegetic,
-Aozora Bunko,小林 多喜二,党生活者,high,Fiction,autodiegetic,
-Aozora Bunko,小林 多喜二,不在地主,high,Fiction,heterodiegetic,
-Aozora Bunko,谷崎 潤一郎,鍵,high,Fiction,homodiegetic,
-Aozora Bunko,谷崎 潤一郎,春琴抄,high,Fiction,homodiegetic,
-Aozora Bunko,谷崎 潤一郎,少将滋幹の母,high,Fiction,heterodiegetic,
-Aozora Bunko,谷崎 潤一郎,痴人の愛,high,Fiction,homodiegetic,
-Aozora Bunko,谷崎 潤一郎,卍,high,Fiction,homodiegetic,
-Aozora Bunko,谷崎 潤一郎,盲目物語,high,Fiction,homodiegetic,
+Aozora Bunko,岡本 綺堂,半七捕物帳,low,detective,heterodiegetic,岡っ引捕り物小説
+Aozora Bunko,岡本 綺堂,青蛙堂鬼談,low,horror,homodiegetic,怪奇
+Aozora Bunko,岡本 綺堂,飛騨の怪談,low,horror,homodiegetic,怪奇
+Aozora Bunko,岡本 綺堂,両国の秋,low,horror,homodiegetic,怪奇
+Aozora Bunko,岡本 綺堂,玉藻の前,low,horror,homodiegetic,怪奇
+Aozora Bunko,森 鴎外,ヰタ・セクスアリス,high,fiction,autodiegetic,
+Aozora Bunko,森 鴎外,青年,high,fiction,homodiegetic,YA fiction (青春小説)
+Aozora Bunko,森 鴎外,渋江抽斎,high,historical non-fiction,homodiegetic,
+Aozora Bunko,小栗 虫太郎,黒死館殺人事件,low,horror,homodiegetic,怪奇
+Aozora Bunko,小栗 虫太郎,白蟻,low,horror,heterodiegetic,怪奇（完全犯罪）
+Aozora Bunko,小栗 虫太郎,潜航艇「鷹の城」,low,detective,heterodiegetic,二十世紀鉄仮面
+Aozora Bunko,坂口 安吾,ジロリの女,low,fiction,autodiegetic,Possibly High
+Aozora Bunko,坂口 安吾,復員殺人事件,low,detective,autodiegetic,
+Aozora Bunko,坂口 安吾,不連続殺人事件,low,detective,autodiegetic,
+Aozora Bunko,小林 多喜二,蟹工船,high,fiction,heterodiegetic,
+Aozora Bunko,小林 多喜二,工場細胞,high,fiction,heterodiegetic,
+Aozora Bunko,小林 多喜二,党生活者,high,fiction,autodiegetic,
+Aozora Bunko,小林 多喜二,不在地主,high,fiction,heterodiegetic,
+Aozora Bunko,谷崎 潤一郎,鍵,high,fiction,homodiegetic,
+Aozora Bunko,谷崎 潤一郎,春琴抄,high,fiction,homodiegetic,
+Aozora Bunko,谷崎 潤一郎,少将滋幹の母,high,fiction,heterodiegetic,
+Aozora Bunko,谷崎 潤一郎,痴人の愛,high,fiction,homodiegetic,
+Aozora Bunko,谷崎 潤一郎,卍,high,fiction,homodiegetic,
+Aozora Bunko,谷崎 潤一郎,盲目物語,high,fiction,homodiegetic,

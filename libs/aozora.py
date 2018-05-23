@@ -518,6 +518,9 @@ def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, remove_speech,
     | .//rp
     | .//rt
     | .//sub
+    | .//div[@class='bibliographical_information']
+    | .//div[@class='notation_notes']
+    | .//div[@class='after_text']
     """):
         parent = e.getparent()
         assert parent is not None

@@ -678,5 +678,5 @@ def write_metadata_file(
                                      d['narrative_perspective'],
                                      d['comments']])
                 except KeyError:
-                    log.critical(f'Missing keys for {file_name} in "{d}"')
+                    log.critical(f'Missing keys for {file_name} in "{d}" with author metadata {aozora_db[d["author"]]}')
         log.info('Wrote metadata to {}'.format(metadata_fn))

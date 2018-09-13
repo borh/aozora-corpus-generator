@@ -62,6 +62,12 @@ pipenv shell
 python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
 ```
 
+You may also use the Pipenv script shortcut to run the program:
+
+```bash
+pipenv run aozora --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+```
+
 ## Parameters
 
 ```bash

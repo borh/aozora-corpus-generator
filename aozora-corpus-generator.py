@@ -117,11 +117,13 @@ if __name__ == '__main__':
             for title, title_dict in titles.items():
                 files.append(('Aozora Bunko', title_dict['file_name'], title_dict['file_path']))
                 metadata.append({
+                    'corpus': 'Aozora Bunko',
                     'corpus_id': title_dict['file_path'],
                     'author': title_dict['author'],
                     'title': title,
                     'brow': '',
                     'genre': '',
+                    'narrative_perspective': '',
                     'comments': ''
                 })
     else:

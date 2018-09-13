@@ -4,6 +4,9 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[scripts]
+
+aozora = "python aozora-corpus-generator.py"
 
 [packages]
 

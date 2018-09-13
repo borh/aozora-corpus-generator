@@ -12,7 +12,7 @@ Primarily for use in an upcoming research project.
 
 **WARNING**:
 Currently, the tool requires a [checked-out repository of the Aozora Bunko](https://github.com/aozorabunko/aozorabunko).
-A git clone will take up to several hours and take up around **13**GB of space.
+A git clone will take up to several hours and take up around **14**GB of space.
 Future versions will ease this requirement.
 
 ## Native

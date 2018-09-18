@@ -578,7 +578,7 @@ def write_corpus_file(text, paragraphs, file_name, prefix):
          open('{}/Plain/{}.txt'.format(prefix, file_name), 'w') as f_plain:
         f_plain.write(text)
         for paragraph in paragraphs:
-            f_tokenized.write('<PGB>\n'.join(re.sub(r'\s+', '\n', ' '.join(sentence)) + '\n<EOS>\n'
+            f_tokenized.write('<PGB>\n'.join('\n'.join(sentence) + '\n<EOS>\n'
                                              for sentence in paragraph))
 
 

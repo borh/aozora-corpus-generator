@@ -293,6 +293,8 @@ def tokenize(text, features, no_punc=True, remove_speech=False,
     # Transform tab to real tab to deal with terminal passthrough issue.
     if opening_delim == 'tab':
         opening_delim = "\t"
+    if closing_delim == 'tab':
+        closing_delim = "\t"
 
     if len(features) == 1:
         opening_delim, closing_delim = '', ''
@@ -304,6 +306,8 @@ def tokenize(text, features, no_punc=True, remove_speech=False,
 
     if not features_separator:
         features_separator = ','
+    elif features_separator == 'tab':
+        features_separator = "\t"
 
     for sentence in text_to_tokens(text, remove_speech):
         tokens = []

@@ -73,7 +73,7 @@ def convert_line(line):
     if new_pos is None:
         raise Exception(line)
 
-    return (orth, new_pos, lemma)
+    return (orth, pos, lemma, new_pos)
 
 
 def main(in_dir, out_dir):
@@ -81,8 +81,8 @@ def main(in_dir, out_dir):
 
     for file in os.listdir(in_dir):
         if file.endswith('.txt'):
-            with open(os.path.join(in_dir, file)) as fin, \
-                 open(os.path.join(out_dir, file), 'w') as fout:
+            with open(os.path.join(in_dir, file), encoding="utf-8") as fin, \
+                 open(os.path.join(out_dir, file), 'w', encoding="utf-8") as fout:
                 for line in fin:
                     line = line.rstrip('\n')
                     if line == '<EOS>' or line == '<PGB>':

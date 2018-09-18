@@ -209,7 +209,16 @@ def sentence_to_tokens(sentence, is_katakana=False):
         for node in mecab.parse(sentence, as_nodes=True):
             if not node.is_eos():
                 token = dict(zip(unidic_features, node.feature.split(',')))
-                if len(token) == 6:  # OOV
+
+                token['pos'] = token['pos1']
+                if token['pos2'] != '*':
+                    token['pos'] += '-' + token['pos2']
+                if token['pos3'] != '*':
+                    token['pos'] += '-' + token['pos3']
+                if token['pos4'] != '*':
+                    token['pos'] += '-' + token['pos4']
+
+                if len(token) == 7:  # OOV
                     if is_katakana:
                         token['orth'] = jaconv.hira2kata(node.surface)
                     else:

@@ -321,12 +321,15 @@ def tokenize(text, features, no_punc=True, remove_speech=False,
                       if not PUNC_RX.match(token['pos1']) and
                       not (token['pos2'] == '数詞' and NUMBER_RX.match(token['orth']))]
         else:
-            tokens = [str(token[first_feature] +
-                          opening_delim +
-                          features_separator.join(token[feature] for feature in rest_features) +
-                          closing_delim).replace('\n', '')
-
-                      for token in sentence]
+            tokens = [
+                '{}{}{}{}'.format(
+                    token[first_feature],
+                    opening_delim,
+                    features_separator.join(token[feature] for feature in rest_features),
+                    closing_delim
+                ).replace('\n', '')
+                for token in sentence
+            ]
 
         if tokens:
             yield tokens

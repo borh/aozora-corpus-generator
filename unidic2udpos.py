@@ -73,7 +73,7 @@ def convert_line(line):
     if new_pos is None:
         raise Exception(line)
 
-    return (orth, pos, lemma, new_pos)
+    return (new_pos,) # (orth, pos, lemma, new_pos)
 
 
 def main(in_dir, out_dir):

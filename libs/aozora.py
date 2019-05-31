@@ -74,6 +74,7 @@ def make_jis_unicode_map(file_path: str) -> Dict[str, str]:
     return d
 # TODO ／″＼ and Unidic
 
+
 def make_ndc_map():
     with open('ndc-3digits.tsv') as f:
         d = {}
@@ -374,7 +375,7 @@ def read_aozora_bunko_list(path: str, ndc_tr: Dict[str, str]) -> defaultdict:
                 # version, we skip the old one while keeping only
                 # old-style works.
                 if row['文字遣い種別'] != '新字新仮名':
-                    log.warn(f'Skipping processing of old-syle kana work: {row}')
+                    log.warning(f'Skipping processing of old-syle kana work: {row}')
                     continue
 
                 # Use the lower value from 底本初版発行年1 and 初出:
@@ -497,7 +498,7 @@ def read_author_title_list(
                         row['corpus_id'] = match['file_path']
                         db.append(row)
                 except KeyError:
-                    log.warn('{} not in Aozora Bunko DB. Skipping...'.format(row))
+                    log.warning('{} not in Aozora Bunko DB. Skipping...'.format(row))
             else: # Corpus is not Aozora Bunko:
                 file_path = join(row['corpus'], row['filename'])
                 corpus_files.append((row['corpus'], splitext(row['filename'])[0], file_path))
@@ -511,7 +512,7 @@ def remove_from(s, pattern):
     rx = re.compile(pattern, re.M)
     maybe_match = rx.search(s)
     if maybe_match:
-        log.warn('Removing: {}'.format(s[maybe_match.start():]))
+        log.warning('Removing: {}'.format(s[maybe_match.start():]))
         return s[0:maybe_match.start()]
     else:
         return s

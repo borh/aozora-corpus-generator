@@ -93,6 +93,7 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
 
     return vars(parser.parse_args())
 
+
 if __name__ == '__main__':
     args = parse_args()
 

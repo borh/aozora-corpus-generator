@@ -67,10 +67,13 @@ python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-t
                         action='store_true',
                         default=False,
                         required=False)
-    parser.add_argument('--remove-speech',
-                        help='specify if direct speech should be discarded from tokenized version (default=False)',
-                        action='store_true',
-                        default=False,
+    parser.add_argument('--speech-mode',
+                        help='specify if direct speech should be included in tokenized version (default="yes"); '
+                             'a value of "narrative" will remove all sentences containing direct speech, and, '
+                             'conversely, a value of "speech" will only keep direct speech ("no" will remove it '
+                             'completely).',
+                        default='yes',
+                        choices=['yes', 'no', 'narrative', 'speech'],
                         required=False)
     parser.add_argument('--incremental', # TODO
                         help='do not overwrite existing corpus files (default=False)',
@@ -143,7 +146,7 @@ if __name__ == '__main__':
                                        args['out'], gaiji_tr,
                                        args['features'],
                                        args['no_punc'],
-                                       args['remove_speech'],
+                                       args['speech_mode'],
                                        args['min_tokens'],
                                        args['features_separator'],
                                        args['features_opening_delim'],
@@ -170,7 +173,7 @@ if __name__ == '__main__':
                 gaiji_tr,
                 args['features'],
                 args['no_punc'],
-                args['remove_speech'],
+                args['speech_mode'],
                 args['min_tokens'],
                 args['features_separator'],
                 args['features_opening_delim'],

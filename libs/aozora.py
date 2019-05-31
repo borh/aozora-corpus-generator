@@ -238,20 +238,34 @@ def sentence_to_tokens(sentence, is_katakana=False):
 SPEECH_RX = re.compile(r'「(.+)」')
 
 
-def text_to_tokens(text, remove_speech=False):
+def text_to_tokens(text, speech_mode='yes'):
     '''
     Returns a sequence of sentences, each comprising a sequence of
     tokens. Must be subsumed into non-lazy collection.  Will re-parse
     the sentence if it detects it as written in kanji-katakana-majiri
-    form.
+    form. speech_mode controls the presence or absence of direct
+    speech.
     '''
     for sentence in split_sentence_ja(text):
-        if remove_speech and SPEECH_RX.search(sentence):
-            for maybe_speech in SPEECH_RX.findall(sentence):
-                cmap, _ = code_frequencies(maybe_speech)
-                if cmap['kanji'] == sum(cmap.values()):
-                    continue
-                sentence = sentence.replace('「{}」'.format(maybe_speech), '')
+        if speech_mode != 'yes':
+            if SPEECH_RX.search(sentence):
+                s = sentence
+                for maybe_speech in SPEECH_RX.findall(sentence):
+                    cmap, _ = code_frequencies(maybe_speech)
+                    if cmap['kanji'] == sum(cmap.values()):
+                        # False positive. (crude detection heuristic)
+                        continue
+                    # TODO: output as tagged data
+                    if speech_mode == 'no':
+                        s = s.replace('「{}」'.format(maybe_speech), '')
+                    elif speech_mode == 'narrative':
+                        s = ''
+                        break
+                    elif speech_mode == 'speech':
+                        if s == sentence:
+                            s = '「{}」'.format(maybe_speech)
+                        s += '「{}」'.format(maybe_speech)
+                sentence = s
 
         tokens = sentence_to_tokens(sentence)
         if len(tokens) == 0:
@@ -267,11 +281,12 @@ def text_to_tokens(text, remove_speech=False):
 PUNC_RX = re.compile(r'^((補助)?記号|空白)$')
 NUMBER_RX = re.compile(r'^[\d０-９一-九]+$')
 
-def wakati(text, no_punc=True, remove_speech=False):
+
+def wakati(text, no_punc=True, speech_mode='yes'):
     '''
     Returns a sequence of sentences comprised of whitespace separated tokens.
     '''
-    for sentence in text_to_tokens(text, remove_speech):
+    for sentence in text_to_tokens(text, speech_mode):
         if no_punc:
             yield [token['orth'] for token in sentence
                    if not PUNC_RX.match(token['pos1']) and
@@ -279,8 +294,8 @@ def wakati(text, no_punc=True, remove_speech=False):
         else:
             yield [token['orth'] for token in sentence]
 
-
-def tokenize(text, features, no_punc=True, remove_speech=False,
+#import pprint
+def tokenize(text, features, no_punc=True, speech_mode='yes',
              features_separator=None, opening_delim=None, closing_delim=None):
     '''
     Returns a sequence of sentences comprised of whitespace separated
@@ -309,7 +324,7 @@ def tokenize(text, features, no_punc=True, remove_speech=False,
     elif features_separator == 'tab':
         features_separator = "\t"
 
-    for sentence in text_to_tokens(text, remove_speech):
+    for sentence in text_to_tokens(text, speech_mode):
         tokens = []
         if no_punc:
             tokens = [str(token[first_feature] +
@@ -502,7 +517,7 @@ def remove_from(s, pattern):
         return s
 
 
-def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, remove_speech,
+def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, speech_mode,
                           features_separator, opening_delim, closing_delim):
     '''
     Reads an Aozora Bunko XHTML/HTML file and converts it into plain
@@ -560,7 +575,7 @@ def read_aozora_bunko_xml(path, gaiji_tr, features, no_punc, remove_speech,
     paragraphs = [list(tokenize(paragraph,
                                 features,
                                 no_punc=no_punc,
-                                remove_speech=remove_speech,
+                                speech_mode=speech_mode,
                                 features_separator=features_separator,
                                 opening_delim=opening_delim,
                                 closing_delim=closing_delim))
@@ -586,7 +601,7 @@ def write_corpus_file(text, paragraphs, file_name, prefix):
 
 
 def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
-                        features=['orth'], no_punc=True, remove_speech=False, min_tokens=False,
+                        features=['orth'], no_punc=True, speech_mode='yes', min_tokens=False,
                         features_separator=None, opening_delim=None, closing_delim=None):
     '''
     Helper function that reads in html and writes a plain/tokenized
@@ -598,7 +613,7 @@ def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
             paragraphs = [list(tokenize(paragraph,
                                         features,
                                         no_punc=no_punc,
-                                        remove_speech=remove_speech,
+                                        speech_mode=speech_mode,
                                         features_separator=features_separator,
                                         opening_delim=opening_delim,
                                         closing_delim=closing_delim))
@@ -613,7 +628,7 @@ def convert_corpus_file(corpus, file_name, file_path, prefix, gaiji_tr,
                 gaiji_tr,
                 features,
                 no_punc,
-                remove_speech,
+                speech_mode,
                 features_separator,
                 opening_delim,
                 closing_delim,

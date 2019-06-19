@@ -251,10 +251,13 @@ def text_to_tokens(text, speech_mode='yes'):
         if speech_mode != 'yes':
             if SPEECH_RX.search(sentence):
                 s = sentence
+                if speech_mode == 'speech':
+                    s = ''
                 for maybe_speech in SPEECH_RX.findall(sentence):
                     cmap, _ = code_frequencies(maybe_speech)
                     if cmap['kanji'] == sum(cmap.values()):
                         # False positive. (crude detection heuristic)
+                        # Ideally test for minimal sentence...
                         continue
                     # TODO: output as tagged data
                     if speech_mode == 'no':
@@ -263,10 +266,10 @@ def text_to_tokens(text, speech_mode='yes'):
                         s = ''
                         break
                     elif speech_mode == 'speech':
-                        if s == sentence:
-                            s = '「{}」'.format(maybe_speech)
                         s += '「{}」'.format(maybe_speech)
                 sentence = s
+            elif speech_mode == 'speech':
+                continue
 
         tokens = sentence_to_tokens(sentence)
         if len(tokens) == 0:

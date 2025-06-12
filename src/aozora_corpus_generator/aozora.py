@@ -1,5 +1,6 @@
 # coding=utf-8
 import csv
+import importlib.resources
 import io
 import logging
 import os
@@ -112,17 +113,17 @@ stdout_handler.setLevel(logging.INFO)
 _gaiji_map: Optional[Dict[str, str]] = None
 
 
-def _get_gaiji_map(file_path: str = "jisx0213-2004-std.txt") -> Dict[str, str]:
+def _get_gaiji_map() -> Dict[str, str]:
     """
     Lazy-load and cache the JIS X 0213 → Unicode mapping.
     """
     global _gaiji_map
     if _gaiji_map is None:
-        _gaiji_map = make_jis_unicode_map(file_path)
+        _gaiji_map = make_jis_unicode_map()
     return _gaiji_map
 
 
-def make_jis_unicode_map(file_path: str) -> Dict[str, str]:
+def make_jis_unicode_map() -> Dict[str, str]:
     """
     Generates a translation dictionary between the men-ku-ten
     (i.e. '1-1-24') type of representation of characters in the JIS X
@@ -142,7 +143,10 @@ def make_jis_unicode_map(file_path: str) -> Dict[str, str]:
         )
     )
 
-    with open(file_path) as f:
+    # load the shipped mapping via importlib.resources
+    with importlib.resources.open_text(
+        "aozora_corpus_generator", "jisx0213-2004-std.txt"
+    ) as f:
         for line in f:
             if line[0] == "#":
                 continue
@@ -177,7 +181,10 @@ def make_jis_unicode_map(file_path: str) -> Dict[str, str]:
 
 
 def make_ndc_map() -> Dict[str, str]:
-    with open("ndc-3digits.tsv") as f:
+    # load the shipped NDC lookup via importlib.resources
+    with importlib.resources.open_text(
+        "aozora_corpus_generator", "ndc-3digits.tsv"
+    ) as f:
         d: Dict[str, str] = {}
         for line in f:
             code, label = line.rstrip("\n").split("\t")

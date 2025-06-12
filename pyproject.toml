@@ -21,9 +21,7 @@ build-backend = "hatchling.build"
 packages = ["src/aozora_corpus_generator"]
 [tool.hatch.build.targets.sdist]
 include = [
-    "/jisx0213-2004-std.txt",
-    "/ndc-3digits.tsv",
-    "/src",
+    "/src/aozora_corpus_generator/*py",
     "/tests",
 ]
 

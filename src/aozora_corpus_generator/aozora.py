@@ -17,12 +17,14 @@ from collections import (
 from io import TextIOWrapper
 from os.path import splitext
 from typing import (
+    IO,
     DefaultDict,
     Dict,
     Generator,
     List,
     Optional,
     Tuple,
+    Union,
     cast,
 )
 from zipfile import ZipFile
@@ -869,7 +871,7 @@ def remove_from(s: str, pattern: str) -> str:
 
 
 def read_aozora_bunko_xml(
-    path: str,
+    path: Union[str, os.PathLike, IO[str], IO[bytes]],
     features: List[str],
     no_punc: bool,
     speech_mode: str,
@@ -891,13 +893,19 @@ def read_aozora_bunko_xml(
     # if caller did not supply a mapping, load the default
     if gaiji_tr is None:
         gaiji_tr = _get_gaiji_map()
-    with open(path, "rb") as f:
-        doc = html.parse(
-            f.read(),
-            maybe_xhtml=False,
-            fallback_encoding="shift_jis",
-            return_root=False,
-        )
+    # support either file‐paths or file‐like inputs (str or bytes)
+    if hasattr(path, "read"):
+        raw = path.read()
+        data = raw.encode("utf-8") if isinstance(raw, str) else raw
+    else:
+        with open(path, "rb") as f:
+            data = f.read()
+    doc = html.parse(
+        data,
+        maybe_xhtml=False,
+        fallback_encoding="shift_jis",
+        return_root=False,
+    )
     body = doc.xpath(".//div[@class='main_text']")
 
     if len(body) == 0:

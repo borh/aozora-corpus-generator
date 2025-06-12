@@ -2,18 +2,15 @@
 
 Generates plain or tokenized text files from the [Aozora Bunko](http://www.aozora.gr.jp/) [[English](https://en.wikipedia.org/wiki/Aozora_Bunko)] for use in corpus-based studies.
 
-# Goals
-
-Primarily for use in an upcoming research project.
-
 # Requirements
 
-## Aozora Bunko Repository
+## Aozora Bunko Repository (repo-mode only)
 
 **WARNING**:
-Currently, the tool requires a [checked-out repository of the Aozora Bunko](https://github.com/aozorabunko/aozorabunko).
-A git clone will take up to several hours and take up around **14**GB of space.
-Future versions will ease this requirement.
+Currently, the tool requires a [checked-out repository of the Aozora Bunko](https://github.com/aozorabunko/aozorabunko) for batch extraction.
+A git clone will take up to several hours and consume ~25 GB.
+
+**NOTE**: If you only need plain‐text from a single XHTML file (using `--xhtml-file`), you do *not* need any Aozora Bunko repository or CSV database.
 
 ## Native
 
@@ -31,23 +28,17 @@ MacOS users can install the native dependencies with:
 brew install mecab mecab-unidic
 ```
 
-## Python
-
-Python 3 is required. All testing is done on the latest stable version (currently 3.6.2), but a slightly older version should also work.
-Native dependencies must be installed before installing the Python dependencies (natto-py needs MeCab).
-
-This project uses [pipenv](https://github.com/kennethreitz/pipenv).
-For existing users, the command below should suffice:
-
+For nix users a `flake.nix` file is provided:
 ```bash
-pipenv install
-pipenv shell
+nix develop
 ```
 
-For those using `pip`, you can install all the dependencies using the command below:
+## Python
+
+Python ≥ 3.10 is required (we test on 3.12). Install the package (and its console script) in editable mode (or just use uv):
 
 ```bash
-pip install natto-py jaconv lxml html5_parser
+pip install -e .
 ```
 
 # Usage
@@ -57,69 +48,97 @@ Clone the repository and run:
 ```bash
 git clone https://github.com/borh/aozora-corpus-generator.git
 cd aozora-corpus-generator
-pipenv install
-pipenv shell
-python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+pip install -e .
+
+# batch extraction example:
+uv run aozora-corpus-generator \
+  --features orth \
+  --author-title-csv author-title.csv \
+  --min-tokens 10 \
+  --out Corpora/Japanese \
+  --parallel
 ```
 
-You may also use the Pipenv script shortcut to run the program:
+If you just have one Aozora XHTML/HTML file and want its plain text (or sentences or tokens):
 
 ```bash
-pipenv run aozora --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+# raw text
+uv run aozora-corpus-generator --xhtml-file path/to/Example.xhtml
+
+# one sentence per line (blank line between paragraphs)
+uv run aozora-corpus-generator --xhtml-file path/to/Example.xhtml \
+  --split-sentences
+
+# tokenized sentences (space-separated tokens)
+uv run aozora-corpus-generator --xhtml-file path/to/Example.xhtml \
+  --tokenized-only
 ```
 
-## Parameters
+This writes the plain text to stdout; to save to a file:
 
 ```bash
-python aozora-corpus-generator.py --help
+uv run aozora-corpus-generator --xhtml-file path/to/cards/12345/Example.html > Example.txt
 ```
 
-    usage: aozora-corpus-generator.py [-h] [--features FEATURES [FEATURES ...]]
-                                      [--features-opening-delim FEATURES_OPENING_DELIM]
-                                      [--features-closing-delim FEATURES_CLOSING_DELIM]
-                                      [--author-title-csv AUTHOR_TITLE_CSV [AUTHOR_TITLE_CSV ...]]
-                                      [--aozora-bunko-repository AOZORA_BUNKO_REPOSITORY]
-                                      --out OUT [--all] [--min-tokens MIN_TOKENS]
-                                      [--no-punc] [--incremental] [--parallel]
-                                      [--verbose]
-    aozora-corpus-generator extracts given author and book pairs from Aozora Bunko and formats them into (optionally tokenized) plain text files.
-    optional arguments:
-      -h, --help            show this help message and exit
-      --features FEATURES [FEATURES ...]
-                            specify which features should be extracted from
-                            morphemes (default='orth')
-      --features-opening-delim FEATURES_OPENING_DELIM
-                            specify opening char to use when outputting multiple
-                            features
-      --features-closing-delim FEATURES_CLOSING_DELIM
-                            specify closing char to use when outputting multiple
-                            features
-      --author-title-csv AUTHOR_TITLE_CSV [AUTHOR_TITLE_CSV ...]
-                            one or more UTF-8 formatted CSV input file(s)
-                            (default='author-title.csv')
-      --aozora-bunko-repository AOZORA_BUNKO_REPOSITORY
-                            path to the aozorabunko git repository (default='aozor
-                            abunko/index_pages/list_person_all_extended_utf8.zip')
-      --out OUT             output (plain, tokenized) files into given output
-                            directory (default=Corpora)
-      --all                 specify if all Aozora Bunko texts should be extracted,
-                            ignoring the author-title.csv (default=False)
-      --min-tokens MIN_TOKENS
-                            specify minimum token count to filter files by
-                            (default=30000)
-      --no-punc             specify if punctuation should be discarded from
-                            tokenized version (default=False)
-      --incremental         do not overwrite existing corpus files (default=False)
-      --parallel            specify if processing should be done in parallel
-                            (default=True)
-      --verbose             turns on verbose logging (default=False)
-    Example usage:
-    python aozora-corpus-generator.py --features 'orth' --author-title-csv 'author-title.csv' --out 'Corpora/Japanese' --parallel
+You may also use `uv run` to run the program:
 
+```bash
+uv run aozora-corpus-generator --features orth --author-title-csv author-title.csv --out Corpora/Japanese --parallel
+```
 
-You may specify multiple values for the `--features` and `author-title-csv` parameters by putting a space between them like so: `--features orth lemma pos1`.
+Warning: this will use all available threads.
 
-# Issues
+# Programmatic Usage
 
--   "Gaiji" characters with provided JIS X 0213 codepoints are converted to their equivalent Unicode codepoint. Aozora Bunko is conservative in encoding rare Kanji, and, therefore, uses images (html version) or textual descriptions (plaintext version).
--   Words are sometimes emphasized in Japanese text with dots above characters, while Aozora Bunko uses bold text in their place. Emphasis tags are currently stripped.
+You can also import and call the core functions from your own Python code:
+
+```python
+from aozora_corpus_generator.aozora import (
+    make_ndc_map,
+    read_aozora_bunko_list,
+    read_aozora_bunko_xml,
+)
+
+## Repo-mode:
+# prepare NDC mapping
+ndc_map = make_ndc_map()
+
+# load Aozora index
+aozora_db = read_aozora_bunko_list(
+    "aozorabunko/index_pages/list_person_all_extended_utf8.zip",
+    ndc_map,
+)
+
+## Single-file mode:
+meta = aozora_db["芥川龍之介"]["羅生門"]
+path = meta["file_path"] # Or specify any xhtml file with its path
+
+text, paragraphs, token_count = read_aozora_bunko_xml(
+    path,
+    features=["orth"],
+    no_punc=True,
+    speech_mode="yes",
+    features_separator=None,
+    opening_delim=None,
+    closing_delim=None,
+    do_tokenize=True,
+)
+
+print(f"Extracted {token_count} tokens")
+print(text)
+```
+
+## Usage
+
+All flags and their defaults can be viewed with:
+
+```bash
+aozora-corpus-generator --help
+```
+
+ You may pass multiple values to options like `--features` and `--author-title-csv` by repeating them or listing multiple arguments, for example:
+
+```bash
+aozora-corpus-generator --features orth lemma pos1 \
+  --author-title-csv a.csv b.csv
+```

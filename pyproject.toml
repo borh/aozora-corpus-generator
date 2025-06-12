@@ -1,0 +1,45 @@
+[project]
+name = "aozora-corpus-generator"
+version = "0.1.1"
+description = ""
+authors = [{ name = "Bor Hodošček", email = "dev@bor.space" }]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "fugashi>=1.5.1",
+    "html5-parser>=0.4.12",
+    "jaconv>=0.4.0",
+    "lxml>=5.4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aozora_corpus_generator"]
+
+[project.scripts]
+aozora-corpus-generator = "aozora_corpus_generator.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.1.1",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --doctest-modules --cov-report term-missing:skip-covered --cov=aozora_corpus_generator"
+testpaths = [
+    "tests",
+    "src",
+]
+doctest_optionflags = "NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = ["src"]
+ignore_missing_imports = true
+warn_unused_configs = true

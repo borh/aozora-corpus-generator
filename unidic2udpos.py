@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 
-import re
-import sys
 import os
 import pathlib
 import pprint
+import re
+import sys
+from itertools import zip_longest
+
+# Where we differ from GiNZA:
+# ^形状詞-助動詞語幹,,AUX instead of ADJ
+# ^空白,,SYM instead of SPACE
+
+# Where we differ from BCCWJ:
+# ^名詞-普通名詞-形状詞可能,,ADJ instead of NOUN
+# ^接続詞,,SCONJ instead odf CCONJ
+# ^補助記号-(句点|読点|括弧(閉|開)|一般),,PUNCT added 一般
 
 udmap_list = """^形容詞-非自立可能,,ADJ
 ^形容詞,,ADJ
@@ -17,7 +27,7 @@ udmap_list = """^形容詞-非自立可能,,ADJ
 ^感動詞,,INTJ
 ^名詞-普通名詞-一般,,NOUN
 ^名詞-普通名詞-サ変可能,,NOUN
-^名詞-普通名詞-形状詞可能,,NOUN
+^名詞-普通名詞-形状詞可能,,ADJ
 ^名詞-普通名詞-副詞可能,,NOUN
 ^名詞-普通名詞-サ変形状詞可能,,NOUN
 ^名詞-普通名詞-助数詞可能,,NOUN
@@ -29,23 +39,20 @@ udmap_list = """^形容詞-非自立可能,,ADJ
 ^助詞-[格係副]助詞,,ADP
 ^助動詞,,AUX
 ^助詞-接続助詞,て,SCONJ
+^接続詞,,SCONJ
 ^接続助?詞,,CCONJ
 ^連体詞,,ADJ
 ^助詞-準体助詞,,SCONJ
 ^助詞-[^格接副],,PART
-^助詞-接続助詞,,PART
+^助詞-接続助詞,,CCONJ
 ^代名詞,,PRON
-^補助記号-(句点|読点|括弧(閉|開)),,PUNCT
+^補助記号-(句点|読点|括弧(閉|開)|一般),,PUNCT
 ^補助記号,,SYM
 ^記号,,SYM
-^空白,,X
+^空白,,SYM
 ^接頭辞,,NOUN
 ^接尾辞,,PART
 .,,X""".splitlines()
-
-# TODO: Currently below is converted to X:
-# ^(解釈不明|難訓|収録諸本情報|題|注|破損|意識的欠字（地名）|意識的欠字（人名-一般）),,X
-# ^(欠損|意識的欠字（漢字表記保留）|意識的欠字（数詞）|意識的欠字（一般）|意識的欠字（人名-姓）|意識的欠字（人名-名）|読取不可|漢文|跋文|外国語|メタ（誤り）|言いよどみ|中古解釈不明|未知語|方言|ローマ字文|英単語|歌・呪文ほか|洒落断片|絵文字・記号等|長大な人名|言い間違い|経文|洒落),,X
 
 # TODO: ^助詞-[^格接副] not matching ^助詞-接続助詞 so manually added
 
@@ -56,12 +63,26 @@ ud_rules = [[re.compile(rule[0]), re.compile(rule[1]) if rule[1] != '' else None
 pprint.pprint(ud_rules)
 
 
-def convert_line(line):
-    orth, pos, lemma = line.split('\t')
+def convert_token(c, n):
+    '''c = current_line, n = next_line'''
+    orth, pos, lemma = c.split('\t')
+    if not n or sentence_break(n):
+        n_orth, n_pos, n_lemma = None, None, None
+    else:
+        n_orth, n_pos, n_lemma = n.split('\t')
 
     new_pos = None
     for (pos_re, lemma_re, ud_pos) in ud_rules:
-        if pos_re.match(pos):
+        # https://github.com/megagonlabs/ginza/blob/develop/ginza/tag_map.py
+        if lemma == '為る' and pos == '動詞-非自立可能':
+            new_pos = 'AUX'
+        elif pos == '名詞-普通名詞-サ変可能' and n_pos == '動詞-非自立可能':
+            new_pos = 'VERB'
+        elif pos == '名詞-普通名詞-サ変形状詞可能' and n_pos == '動詞-非自立可能':
+            new_pos = 'VERB'
+        elif pos == '名詞-普通名詞-サ変形状詞可能' and (n_pos == '助動詞' or n_pos.find('形状詞') >= 0):
+            new_pos = 'ADJ'
+        elif pos_re.match(pos):
             if lemma_re:
                 if lemma_re.match(lemma):
                     new_pos = ud_pos
@@ -71,9 +92,32 @@ def convert_line(line):
                 break
 
     if new_pos is None:
-        raise Exception(line)
+        # We look for any gaps in lemma matching here:
+        raise Exception((c, n))
 
     return (new_pos,) # (orth, pos, lemma, new_pos)
+
+
+def sentence_break(s):
+    if s == '<EOS>' or s == '<PGB>':
+        return True
+    else:
+        return False
+
+
+def partition_by_sentence(xs):
+    n = len(xs)
+    breaks = [i for i, x in enumerate(xs) if sentence_break(x)]
+    for i in range(len(breaks)-1, 0, -1):
+        if i > 0 and breaks[i] - breaks[i-1] == 1:
+            del breaks[i]
+    # breaks = [j for i, j in zip_longest(breaks, breaks[1:], fillvalue=0) if j - i != 1]
+    i = 0
+    for b in breaks:
+        yield xs[i:b]
+        i = b
+    if i < n:
+        yield xs[i:n]
 
 
 def main(in_dir, out_dir):
@@ -83,12 +127,13 @@ def main(in_dir, out_dir):
         if file.endswith('.txt'):
             with open(os.path.join(in_dir, file), encoding="utf-8") as fin, \
                  open(os.path.join(out_dir, file), 'w', encoding="utf-8") as fout:
-                for line in fin:
-                    line = line.rstrip('\n')
-                    if line == '<EOS>' or line == '<PGB>':
-                        fout.write(line + '\n')
-                    else:
-                        fout.write('\t'.join(convert_line(line)) + '\n')
+                lines = fin.read().splitlines()
+                for sentence in partition_by_sentence(lines):
+                    for current_line, next_line in zip_longest(sentence, sentence[1:]):
+                        if sentence_break(current_line):
+                            fout.write(current_line + '\n')
+                        else:
+                            fout.write('\t'.join(convert_token(current_line, next_line)) + '\n')
 
 
 if __name__ == '__main__':

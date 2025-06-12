@@ -893,10 +893,13 @@ def parse_aozora_bunko_xml_content(
     if gaiji_tr is None:
         gaiji_tr = _get_gaiji_map()
 
+    # choose fallback encoding: use UTF-8 when the caller passed us a str,
+    # otherwise assume Shift_JIS for raw bytes from Aozora Bunko files
+    fallback = "utf-8" if isinstance(xml_content, str) else "shift_jis"
     doc = html.parse(
         data,
         maybe_xhtml=False,
-        fallback_encoding="shift_jis",
+        fallback_encoding=fallback,
         return_root=False,
     )
     body = doc.xpath(".//div[@class='main_text']")

@@ -97,6 +97,7 @@ from aozora_corpus_generator.aozora import (
     make_ndc_map,
     read_aozora_bunko_list,
     read_aozora_bunko_xml,
+    parse_aozora_bunko_xml_content,
 )
 
 ## Repo-mode:
@@ -109,11 +110,11 @@ aozora_db = read_aozora_bunko_list(
     ndc_map,
 )
 
-## Single-file mode:
+## Single-file mode (from disk path):
 meta = aozora_db["芥川龍之介"]["羅生門"]
-path = meta["file_path"] # Or specify any xhtml file with its path
+path = meta["file_path"]
 
-text, paragraphs, token_count = read_aozora_bunko_xml(
+processed = read_aozora_bunko_xml(
     path,
     features=["orth"],
     no_punc=True,
@@ -123,6 +124,35 @@ text, paragraphs, token_count = read_aozora_bunko_xml(
     closing_delim=None,
     do_tokenize=True,
 )
+text = processed["text"]
+paragraphs = processed["paragraphs"]
+token_count = processed["token_count"]
+
+print(f"Extracted {token_count} tokens")
+print(text)
+```
+
+# In-memory Parsing
+
+If you already have the XHTML/HTML content as a string (or bytes), use `parse_aozora_bunko_xml_content`:
+
+```python
+from aozora_corpus_generator.aozora import parse_aozora_bunko_xml_content
+
+xml_string = '<?xml version="1.0" encoding="Shift_JIS"?>...'
+processed = parse_aozora_bunko_xml_content(
+    xml_string,
+    features=["orth"],
+    no_punc=True,
+    speech_mode="yes",
+    features_separator=None,
+    opening_delim=None,
+    closing_delim=None,
+    do_tokenize=True,
+)
+text = processed["text"]
+paragraphs = processed["paragraphs"]
+token_count = processed["token_count"]
 
 print(f"Extracted {token_count} tokens")
 print(text)

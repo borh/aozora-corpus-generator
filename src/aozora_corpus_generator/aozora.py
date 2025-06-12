@@ -17,7 +17,6 @@ from collections import (
 from io import TextIOWrapper
 from os.path import splitext
 from typing import (
-    IO,
     DefaultDict,
     Dict,
     Generator,
@@ -870,36 +869,30 @@ def remove_from(s: str, pattern: str) -> str:
         return s
 
 
-def read_aozora_bunko_xml(
-    path: Union[str, os.PathLike, IO[str], IO[bytes]],
-    features: List[str],
-    no_punc: bool,
-    speech_mode: str,
-    features_separator: Optional[str],
-    opening_delim: Optional[str],
-    closing_delim: Optional[str],
+def parse_aozora_bunko_xml_content(
+    xml_content: Union[str, bytes],
+    features: Optional[List[str]] = None,
+    no_punc: bool = True,
+    speech_mode: str = "yes",
+    features_separator: Optional[str] = None,
+    opening_delim: Optional[str] = None,
+    closing_delim: Optional[str] = None,
     do_tokenize: bool = True,
     gaiji_tr: Optional[Dict[str, str]] = None,
 ) -> ProcessedText:
     """
-    Reads an Aozora Bunko XHTML/HTML file and converts it into plain
-    text. All comments and ruby are removed, and gaiji are replaced
-    with Unicode equivalents.
-    Reference:
-    -   http://www.aozora.gr.jp/annotation/
-    -   http://www.aozora.gr.jp/annotation/henkoten.html
+    Parse Aozora Bunko XHTML/HTML from raw XML (str or bytes)
+    and return a dict with keys 'text', 'paragraphs', and 'token_count'.
     """
+    # normalize to bytes
+    data = xml_content.encode("utf-8") if isinstance(xml_content, str) else xml_content
 
-    # if caller did not supply a mapping, load the default
+    # default features / gaiji map
+    if features is None:
+        features = ["orth"]
     if gaiji_tr is None:
         gaiji_tr = _get_gaiji_map()
-    # support either file‐paths or file‐like inputs (str or bytes)
-    if hasattr(path, "read"):
-        raw = path.read()
-        data = raw.encode("utf-8") if isinstance(raw, str) else raw
-    else:
-        with open(path, "rb") as f:
-            data = f.read()
+
     doc = html.parse(
         data,
         maybe_xhtml=False,
@@ -909,12 +902,10 @@ def read_aozora_bunko_xml(
     body = doc.xpath(".//div[@class='main_text']")
 
     if len(body) == 0:
-        log.warning(
-            "Error extracting main_text from file {}, trying workaround...".format(path)
-        )
+        log.warning("Error extracting main_text from XML content, trying workaround...")
         body = doc.xpath(".//body")
         if len(body) == 0:
-            log.critical("Error extracting text from file {} by any means".format(path))
+            log.critical("Error extracting text from XML content by any means")
             return {"text": "", "paragraphs": [], "token_count": 0}
         else:
             body = body[0]
@@ -987,7 +978,7 @@ def read_aozora_bunko_xml(
 
     if q != 0:
         log.error(
-            f"q {q} not 0 in {path}, resetting... {text.count('「')} <> {text.count('」')}"
+            f"q {q} not 0 in XML content, resetting... {text.count('「')} <> {text.count('」')}"
         )
         q = 0
 
@@ -996,6 +987,43 @@ def read_aozora_bunko_xml(
     )
 
     return {"text": text, "paragraphs": paragraphs, "token_count": token_count}
+
+
+def read_aozora_bunko_xml(
+    path: Union[str, os.PathLike],
+    features: Optional[List[str]] = None,
+    no_punc: bool = True,
+    speech_mode: str = "yes",
+    features_separator: Optional[str] = None,
+    opening_delim: Optional[str] = None,
+    closing_delim: Optional[str] = None,
+    do_tokenize: bool = True,
+    gaiji_tr: Optional[Dict[str, str]] = None,
+) -> ProcessedText:
+    """
+    Reads an Aozora Bunko XHTML/HTML file and converts it into plain
+    text. All comments and ruby are removed, and gaiji are replaced
+    with Unicode equivalents.
+    Reference:
+    -   http://www.aozora.gr.jp/annotation/
+    -   http://www.aozora.gr.jp/annotation/henkoten.html
+    """
+    # Only filesystem paths are accepted here. Read the bytes...
+    with open(path, "rb") as f:
+        xml_bytes = f.read()
+
+    # ... and pass them to the raw-content parser
+    return parse_aozora_bunko_xml_content(
+        xml_bytes,
+        features=features,
+        no_punc=no_punc,
+        speech_mode=speech_mode,
+        features_separator=features_separator,
+        opening_delim=opening_delim,
+        closing_delim=closing_delim,
+        do_tokenize=do_tokenize,
+        gaiji_tr=gaiji_tr,
+    )
 
 
 def write_corpus_file(
